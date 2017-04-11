@@ -1,6 +1,5 @@
 ---
-  - hosts: all
-    name: Create new host through Satellite 6.2 deployed on LibVirt
+  - name: Create new host through Satellite 6.2 deployed on LibVirt
 
 
 
