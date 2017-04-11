@@ -1,0 +1,41 @@
+---
+- name: create ec2 instance
+  ec2:
+    keypair: "{{ ec2_keypair }}"
+    type: "{{ ec2_type }}"
+    image: "{{ ec2_image }}"
+    region: "{{ ec2_region }}"
+    count: "{{ ec2_instance_count | int }}"
+    group_id: "{{ ec2_group_id }}"
+    vpc_subnet_id: "{{ ec2_vpc_subnet_id }}"
+    assign_public_ip: yes
+    instance_tags:
+      Name: "{{ tower_user_name }}-demo"
+      ansible_lab: true
+      user_id: "{{ tower_user_name }}"
+    wait: true
+  register: ec2
+  tags:
+    - provision
+
+- name: Wait for SSH to come up
+  wait_for:
+    host: "{{ item.public_dns_name }}"
+    port: 22
+    delay: 60
+    timeout: 320
+    state: started
+  with_items: "{{ ec2.instances }}"
+  delegate_to: localhost
+  tags:
+    - provision
+
+- name: Add new ec2 instance to inventory
+  add_host:
+    name: "{{ item.public_ip }}"
+    groups: new_host
+    ansible_ssh_user: ec2-user
+    ansible_ssh_private_key_file: /home/rnelson/.ssh/ansible-rn.pem
+  with_items: "{{ ec2.instances }}"
+  tags:
+    - provision
