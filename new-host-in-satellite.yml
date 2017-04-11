@@ -1,3 +1,4 @@
 ---
 - name: Create new host through Satellite 6.2 deployed on LibVirt
-  command: hammer host create --hostgroup=RHEL7_Crash_Servers --location=RDU --organization=RedHat --medium-id=10 --compute-resource=Libvirt_CR --compute-attributes="cpus=1,memory=1073741824,start=1" --interface="primary=true,compute_type=network,compute_network=sat-isolated" --name="test-hammer"
+  hosts: satellite.demo.com
+  command: /usr/bin/hammer host create --hostgroup=RHEL7_Crash_Servers --location=RDU --organization=RedHat --medium-id=10 --compute-resource=Libvirt_CR --compute-attributes="cpus=1,memory=1073741824,start=1" --interface="primary=true,compute_type=network,compute_network=sat-isolated" --name="test-hammer"
