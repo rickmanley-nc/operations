@@ -1,3 +1,4 @@
 ---
 - name: Add local user 'localuser'
+  hosts: all
   user: name=localuser groups=wheel
