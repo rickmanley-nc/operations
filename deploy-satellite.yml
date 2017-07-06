@@ -1,0 +1,7 @@
+---
+- name: Deploy new Satellite build on LibVirt
+  hosts: satellite.demo.com
+
+
+  tasks:
+    name: 
