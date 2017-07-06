@@ -1,0 +1,7 @@
+---
+- hosts: all
+  name: Fail to set ownership on file
+
+  tasks:
+    - name: set ownership of file that does not exist
+      file: path=/etc/foo.conf owner=foo
