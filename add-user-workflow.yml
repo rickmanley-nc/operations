@@ -1,4 +1,3 @@
 ---
-  tasks:
-    name: Add local user 'localuser'
-    user: name=localuser groups=wheel
+- name: Add local user 'localuser'
+  user: name=localuser groups=wheel
