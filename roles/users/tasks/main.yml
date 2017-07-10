@@ -1,0 +1,4 @@
+---
+- name: create admin user with password encrypted by vault
+  user: name=admin password:"{{ admin_password }}"
+  
