@@ -1,7 +1,5 @@
 ---
 - hosts: all
   name: test functionality of vault
-
-  tasks:
-    - name: set ownership of file that does not exist
-      file: path=/etc/foo.conf owner=foo
+  roles:
+   - users
