@@ -1,7 +1,0 @@
----
-- hosts: all
-
-
-  tasks:
-    name: Add local user 'shadowman' with 'redhat' password
-    user: name=shadowman groups=wheel password=$1$SomeSalt$FQ8j8BGQWfkLvglE85Qiu0
