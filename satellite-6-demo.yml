@@ -1,0 +1,7 @@
+---
+- hosts: all
+  name: Deploy and Configure Satellite 6.2 on LibVirt (localhost)
+  roles:
+    - install_RHEL
+    - satellite-install
+    - satellite-configure

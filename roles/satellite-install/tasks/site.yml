@@ -1,0 +1,96 @@
+---
+- name: Start and Enable firewalld
+  systemd: name=firewalld state=started enabled=yes
+
+- name: Configure firewalld
+  firewalld:
+    service: {{item}}
+    permanent: true
+    state: yes
+  with_items:
+    - RH-Satellite-6
+    - dns
+    - dhcp
+    - tftp
+    - http
+    - https
+
+- name: Add 5647 to firewalld
+  firewalld:
+    port: 5647/tcp
+    permanent: true
+    state: yes
+
+- name: Reload firewalld
+  systemd:
+    name: firewalld
+    state: reloaded
+
+- name: set hostname in /etc/hosts for ease of troubleshooting
+  command: echo "192.168.126.2 satellite.demo.com" >> /etc/hosts
+
+- name: Register to RHN and attach Satellite SKU
+  redhat_subscription:
+    state: present
+    username: rhn-support-rnelson
+    password: $6$I6OtgqILLeUAl1ug$/g1L58rBsSfV/d6KtRRILKirZi5I1.ZQPBqCY/e4A8zfvdVZC/ifi6m4actA1LO8YVw55T7tekR3xssr1zzIf/
+    pool_ids: 8a85f98156fed8130156ffeb6a535687
+
+- name: Disable All Repositories
+  command: subscription-manager repos --disable "*"
+
+- name: Enable Specific Repositories
+  command: subscription-manager repos --enable rhel-7-server-rpms --enable rhel-server-rhscl-7-rpms --enable rhel-7-server-satellite-6.2-rpms
+
+- name: clean out yum metadata
+  command: yum clean all
+
+- name: Install Satellite RPMs
+  yum:
+    name: {{ item }}
+    state: latest
+  with_items:
+    - satellite
+    - puppet-foreman_scap_client
+
+- name: set local BASH variables
+  command: echo "ORG=RedHat" >> ~/.bashrc
+
+- name: set local BASH variables
+  command: echo "LOCATION=RDU" >> ~/.bashrc
+
+- name: set local BASH variables
+  command: echo "DOMAIN=demo.com" >> ~/.bashrc
+
+- name: read in the BASH variables
+  command: source ~/.bashrc
+
+- name: Run satellite-installer
+  command: satellite-installer -v --scenario satellite --foreman-initial-organization "$ORG" --foreman-initial-location "$LOCATION" --foreman-admin-password redhat --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone $DOMAIN --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.100 192.168.126.150" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
+
+- name: Update resolv.conf to replace the original gateway of the hypervisor, with Satellite's dns
+  replace:
+    path: /etc/resolv.conf
+    regexp: '\1 192.168.126.1'
+    replace: '\1 192.168.126.2'
+    backup: yes
+
+- name: uncomment and correct the password section of /etc/hammer/cli.modules.d/foreman.yml. ***is this needed?***
+
+- name: Upload Manifest
+  command: hammer subscription upload --organization "$ORG" --file /root/Satellite_61_Generated_27_Jul_2016.zip
+
+- name: Enable RHEL 7 Server
+  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server (RPMs)'
+
+- name: Enable RHEL 7 Server Extras
+  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)'
+
+- name: Enable RHEL 7.2 Kickstart
+  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.2' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
+
+- name: Enable Satellite Tools 6.2 (for RHEL 7 Server)
+  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Satellite Tools 6.2 (for RHEL 7 Server) (RPMs)'
+
+- name: Enable RHEL 7 Server Optional
+  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)'
