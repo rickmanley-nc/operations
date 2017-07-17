@@ -1,0 +1,9 @@
+---
+- name: Copy Gold Image to /home/rnelson/Images/ (satellite.example.com : pass/redhat)
+  command: cp -r /home/rnelson/Images/original/GOLD-satellite.qcow2 /home/rnelson/Images/satellite-6.qcow2
+
+- name: Import New Satellite Disk Image
+  command: virt-install --name satellite-new --ram 12228 --vcpus 4 --network bridge=virbr3 --disk path=/home/rnelson/Images/satellite-6.qcow2 --import
+
+- name: start the vm
+  command: virsh start satellite-6

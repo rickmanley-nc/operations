@@ -1,5 +1,5 @@
 ---
-- hosts: all
+- hosts: satellite
   name: Deploy and Configure Satellite 6.2 on LibVirt (localhost)
   roles:
    - satellite-install
@@ -13,4 +13,13 @@
 # Gateway - 192.168.126.1
 # DNS - 192.168.126.1 (note: this is temporary. After we install Satellite, we'll change this to the IP of the Satellite as it will be running DNS)
 # 3. Ensure partition layout has just "/" at 120 GiB, "swap" at 4096 MiB, and "/boot" at 250 MiB
-# 4.
+# 4. Clone disk/image/vm as gold image.
+# 5. build new image...
+# virsh suspend satellite-test
+# virt-clone --connect qemu:///system --original satellite-test --name satellite-test-clone --file /home/rnelson/Images/satellite-test-clone.qcow2
+# virsh resume satellite-test
+# virt-sysprep -d satellite-test-clone --hostname satellite.example.com --root-password password:redhat
+# cp /home/rnelson/Images/satellite-test-clone.qcow2 /home/rnelson/Images/original/GOLD-satellite.qcow2
+# cp /home/rnelson/Images/original/GOLD-satellite.qcow2 /home/rnelson/Images/satellite-test-gold.qcow2
+# virt-install --name satellite-new --ram 12228 --vcpus 4 --network bridge=virbr3 --disk path=/home/rnelson/Images/satellite-test-gold.qcow2 --import
+# virsh start satellite-test-clone
