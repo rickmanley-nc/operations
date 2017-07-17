@@ -1,5 +1,5 @@
 ---
-- hosts: Laptop
+- hosts: all
   name: deploy image based off of a clone
   roles:
     - satellite-deploy-vm
