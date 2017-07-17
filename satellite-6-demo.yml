@@ -2,6 +2,18 @@
 - hosts: all
   name: Deploy and Configure Satellite 6.2 on LibVirt (localhost)
   roles:
-    - install_RHEL
+#    - install_RHEL
     - satellite-install
-    - satellite-configure
+#    - satellite-configure
+
+
+# Need to document process:
+# 1. Create sat-isolated network with x.x.126.0/24 subnet
+# 2. Create VM: 4 vCPU, 12228 GB RAM, 125 GB Storage, RHEL 7.3 - place on sat-isolated network with the following static ip info:
+# Configure static networking as
+# IP -  192.168.126.2
+# Netmask - 255.255.255.0
+# Gateway - 192.168.126.1
+# DNS - 192.168.126.1 (note: this is temporary. After we install Satellite, we'll change this to the IP of the Satellite as it will be running DNS)
+# 3. Ensure partition layout has just "/" at 120 GiB, "swap" at 4096 MiB, and "/boot" at 250 MiB
+# 4.

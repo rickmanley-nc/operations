@@ -4,9 +4,9 @@
 
 - name: Configure firewalld
   firewalld:
-    service: {{item}}
+    service: "{{ item }}"
     permanent: true
-    state: yes
+    state: enabled
   with_items:
     - RH-Satellite-6
     - dns
@@ -19,22 +19,29 @@
   firewalld:
     port: 5647/tcp
     permanent: true
-    state: yes
+    state: enabled
 
 - name: Reload firewalld
   systemd:
     name: firewalld
     state: reloaded
 
-- name: set hostname in /etc/hosts for ease of troubleshooting
-  command: echo "192.168.126.2 satellite.demo.com" >> /etc/hosts
+- name: Add mappings to /etc/hosts
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      {{ item.ip }} {{ item.name }}
+    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
+  with_items:
+    - { name: satellite.rnelson.com, ip: 192.168.126.2 }
 
 - name: Register to RHN and attach Satellite SKU
   redhat_subscription:
     state: present
-    username: rhn-support-rnelson
-    password: $6$I6OtgqILLeUAl1ug$/g1L58rBsSfV/d6KtRRILKirZi5I1.ZQPBqCY/e4A8zfvdVZC/ifi6m4actA1LO8YVw55T7tekR3xssr1zzIf/
-    pool_ids: 8a85f98156fed8130156ffeb6a535687
+    username: "{{ rhn_username }}"
+    password: "{{ rhn_password }}"
+# need ansible2.4 for pool_ids to work    pool_ids: 8a85f98156fed8130156ffeb6a535687
+    pool: '^(Red Hat Satellite Employee Subscription)$'
 
 - name: Disable All Repositories
   command: subscription-manager repos --disable "*"
@@ -47,35 +54,24 @@
 
 - name: Install Satellite RPMs
   yum:
-    name: {{ item }}
+    name: "{{ item }}"
     state: latest
   with_items:
     - satellite
     - puppet-foreman_scap_client
 
-- name: set local BASH variables
-  command: echo "ORG=RedHat" >> ~/.bashrc
-
-- name: set local BASH variables
-  command: echo "LOCATION=RDU" >> ~/.bashrc
-
-- name: set local BASH variables
-  command: echo "DOMAIN=demo.com" >> ~/.bashrc
-
-- name: read in the BASH variables
-  command: source ~/.bashrc
-
 - name: Run satellite-installer
-  command: satellite-installer -v --scenario satellite --foreman-initial-organization "$ORG" --foreman-initial-location "$LOCATION" --foreman-admin-password redhat --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone $DOMAIN --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.100 192.168.126.150" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
+  raw: satellite-installer -v --scenario satellite --foreman-initial-organization "RedHat" --foreman-initial-location "RDU" --foreman-admin-password redhat --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone demo.com --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.100 192.168.126.150" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
 
-- name: Update resolv.conf to replace the original gateway of the hypervisor, with Satellite's dns
-  replace:
+- name: Update resolv.conf to have Satellite point to itself for DNS resolution
+  lineinfile:
     path: /etc/resolv.conf
-    regexp: '\1 192.168.126.1'
-    replace: '\1 192.168.126.2'
-    backup: yes
+    regexp: 'nameserver'
+    line: 'nameserver 192.168.126.2'
+    state: present
+    backrefs: yes
 
-- name: uncomment and correct the password section of /etc/hammer/cli.modules.d/foreman.yml. ***is this needed?***
+#- name: uncomment and correct the password section of /etc/hammer/cli.modules.d/foreman.yml. ***is this needed?***
 
 - name: Upload Manifest
   command: hammer subscription upload --organization "$ORG" --file /root/Satellite_61_Generated_27_Jul_2016.zip
