@@ -1,11 +1,11 @@
 ---
-- hosts: laptop
+- hosts: 192.168.122.1
   name: Deploy Satellite VM on LibVirt
   roles:
    - satellite-deploy-vm
 
 
-- hosts: satellite
+- hosts: 192.168.126.2
   name: Install and Configure Satellite 6.2
   roles:
    - satellite-install
