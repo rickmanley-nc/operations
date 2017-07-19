@@ -1,8 +1,13 @@
 ---
-- hosts: all
-  name: Deploy and Configure Satellite 6.2 on LibVirt (localhost)
+- hosts: laptop
+  name: Deploy Satellite VM on LibVirt
   roles:
    - satellite-deploy-vm
+
+
+- hosts: satellite
+  name: Install and Configure Satellite 6.2
+  roles:
    - satellite-install
 
 # Need to document process:
