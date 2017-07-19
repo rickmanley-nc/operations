@@ -72,21 +72,25 @@
     backrefs: yes
 
 #- name: uncomment and correct the password section of /etc/hammer/cli.modules.d/foreman.yml. ***is this needed?***
+- name: Copy over manifest
+  copy:
+    src: files/Satellite_61_Latest.zip
+    dest: /root/Satellite_61_Latest.zip
 
 - name: Upload Manifest
-  command: hammer subscription upload --organization "$ORG" --file /root/Satellite_61_Generated_27_Jul_2016.zip
+  command: hammer subscription upload --organization "RedHat" --file /root/Satellite_61_Latest.zip
 
 - name: Enable RHEL 7 Server
-  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server (RPMs)'
+  command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server (RPMs)'
 
 - name: Enable RHEL 7 Server Extras
-  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)'
+  command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)'
 
 - name: Enable RHEL 7.2 Kickstart
-  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.2' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
+  command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.2' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
 
 - name: Enable Satellite Tools 6.2 (for RHEL 7 Server)
-  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Satellite Tools 6.2 (for RHEL 7 Server) (RPMs)'
+  command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Satellite Tools 6.2 (for RHEL 7 Server) (RPMs)'
 
 - name: Enable RHEL 7 Server Optional
-  command: hammer repository-set enable --organization "$ORG" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)'
+  command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)'

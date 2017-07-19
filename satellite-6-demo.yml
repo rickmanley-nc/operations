@@ -2,6 +2,7 @@
 - hosts: satellite
   name: Deploy and Configure Satellite 6.2 on LibVirt (localhost)
   roles:
+   - satellite-deploy-vm
    - satellite-install
 
 # Need to document process:
@@ -21,5 +22,6 @@
 # virt-sysprep -d satellite-test-clone --hostname satellite.example.com --root-password password:redhat
 # cp /home/rnelson/Images/satellite-test-clone.qcow2 /home/rnelson/Images/original/GOLD-satellite.qcow2
 # cp /home/rnelson/Images/original/GOLD-satellite.qcow2 /home/rnelson/Images/satellite-test-gold.qcow2
-# virt-install --name satellite-new --ram 12228 --vcpus 4 --network bridge=virbr3 --disk path=/home/rnelson/Images/satellite-test-gold.qcow2 --import
+# virt-install --name satellite-new --ram 12228 --vcpus 4 --network bridge=virbr3 --disk path=/home/rnelson/Images/satellite-test-gold.qcow2 --import --noautoconsole
 # virsh start satellite-test-clone
+# 6. 
