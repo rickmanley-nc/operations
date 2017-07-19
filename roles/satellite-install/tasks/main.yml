@@ -74,7 +74,7 @@
 #- name: uncomment and correct the password section of /etc/hammer/cli.modules.d/foreman.yml. ***is this needed?***
 - name: Copy over manifest
   copy:
-    src: files/Satellite_61_Latest.zip
+    src: /root/Satellite_61_Latest.zip
     dest: /root/Satellite_61_Latest.zip
 
 - name: Upload Manifest
