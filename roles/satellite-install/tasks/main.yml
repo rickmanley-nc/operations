@@ -26,16 +26,16 @@
     name: firewalld
     state: reloaded
 
-- name: Add mappings to /etc/hosts
+- name: Add mappings to /etc/hosts, This needs to call the hostname instead of having it hard coded
   blockinfile:
     path: /etc/hosts
     block: |
       {{ item.ip }} {{ item.name }}
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
   with_items:
-    - { name: satellite.rnelson.com, ip: 192.168.126.2 }
+    - { name: satellite.example.com, ip: 192.168.126.2 }
 
-- name: Register to RHN and attach Satellite SKU
+- name: Register to RHN and attach Satellite SKU, once Ansible 2.4 released, make pool_ids a variable for input
   redhat_subscription:
     state: present
     username: "{{ rhn_username }}"
@@ -60,7 +60,7 @@
     - satellite
     - puppet-foreman_scap_client
 
-- name: Run satellite-installer
+- name: Run satellite-installer (look in github for examples... this can all be done through variables, and done without the raw module)
   raw: satellite-installer -v --scenario satellite --foreman-initial-organization "RedHat" --foreman-initial-location "RDU" --foreman-admin-password redhat --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone demo.com --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.100 192.168.126.150" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
 
 - name: Update resolv.conf to have Satellite point to itself for DNS resolution
