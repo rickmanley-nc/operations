@@ -1,6 +1,7 @@
 ---
 - name: Start and Enable firewalld
   systemd: name=firewalld state=started enabled=yes
+  tags: satellite
 
 - name: Configure firewalld
   firewalld:
@@ -14,17 +15,20 @@
     - tftp
     - http
     - https
+  tags: satellite
 
 - name: Add 5647 to firewalld
   firewalld:
     port: 5647/tcp
     permanent: true
     state: enabled
+  tags: satellite
 
 - name: Reload firewalld
   systemd:
     name: firewalld
     state: reloaded
+  tags: satellite
 
 - name: Add mappings to /etc/hosts, This needs to call the hostname instead of having it hard coded
   blockinfile:
@@ -35,6 +39,7 @@
   with_items:
     - { name: satellite.demo.com, ip: 192.168.126.2 }
     - { name: tower.demo.com, ip: 192.168.126.3 }
+  tags: satellite
 
 - name: Register to RHN and attach Satellite SKU, (change to pool_ids when Ansible 2.4 is released)
   redhat_subscription:
@@ -43,15 +48,19 @@
     password: "{{ rhn_password }}"
 # need ansible2.4 for pool_ids to work
     pool: '^(Red Hat Satellite Employee Subscription)$'
+  tags: satellite
 
 - name: Disable All Repositories
   raw: subscription-manager repos --disable "*"
+  tags: satellite
 
 - name: Enable Specific Repositories
   raw: subscription-manager repos --enable rhel-7-server-rpms --enable rhel-server-rhscl-7-rpms --enable rhel-7-server-satellite-6.2-rpms
+  tags: satellite
 
 - name: clean out yum metadata
   command: yum clean all
+  tags: satellite
 
 - name: Install Satellite RPMs
   yum:
@@ -60,9 +69,11 @@
   with_items:
     - satellite
     - puppet-foreman_scap_client
+  tags: satellite
 
 - name: Run satellite-installer (look in github for examples... this can all be done through variables, and done without the raw module)
   raw: satellite-installer -v --scenario satellite --foreman-initial-organization "RedHat" --foreman-initial-location "RDU" --foreman-admin-password redhat --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone demo.com --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.100 192.168.126.150" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
+  tags: satellite
 
 - name: Update resolv.conf to have Satellite point to itself for DNS resolution
   lineinfile:
@@ -71,27 +82,35 @@
     line: 'nameserver 192.168.126.2'
     state: present
     backrefs: yes
+  tags: satellite
 
 #- name: uncomment and correct the password section of /etc/hammer/cli.modules.d/foreman.yml. ***is this needed?***
 - name: Copy over manifest
   copy:
     src: /root/Satellite_61_Latest.zip
     dest: /root/Satellite_61_Latest.zip
+  tags: satellite
 
 - name: Upload Manifest
   command: hammer subscription upload --organization "RedHat" --file /root/Satellite_61_Latest.zip
+  tags: satellite
 
 - name: Enable RHEL 7 Server
   command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server (RPMs)'
+  tags: satellite
 
 - name: Enable RHEL 7 Server Extras
   command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)'
+  tags: satellite
 
 - name: Enable RHEL 7.2 Kickstart
   command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.2' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
+  tags: satellite
 
 - name: Enable Satellite Tools 6.2 (for RHEL 7 Server)
   command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Satellite Tools 6.2 (for RHEL 7 Server) (RPMs)'
+  tags: satellite
 
 - name: Enable RHEL 7 Server Optional
   command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)'
+  tags: satellite
