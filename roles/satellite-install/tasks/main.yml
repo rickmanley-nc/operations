@@ -71,13 +71,11 @@
     - puppet-foreman_scap_client
   tags: satellite
 
-- name: Add Hammer password
-  lineinfile:
-    path: /etc/hammer/cli.modules.d/foreman.yml
-    regexp: 'password'
-    line: ':password: \'redhat\''
-    state: present
-    backrefs: yes
+- name: Download foreman.yml for Hammer configs
+  get_url:
+    url: http://192.168.126.1/foreman.yml
+    dest: /etc/hammer/cli.modules.d/foreman.yml
+    mode: 0700
   tags: satellite
 
 - name: Run satellite-installer (look in github for examples... this can all be done through variables, and done without the raw module)
