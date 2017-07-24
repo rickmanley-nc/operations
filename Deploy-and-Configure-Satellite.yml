@@ -1,11 +1,11 @@
 ---
 - name: Deploy Satellite VM
-  hosts: laptop
+  hosts: Laptop
   roles:
     - satellite-deploy-vm
 
 - name: Configure Satellite
-  hosts: satellite
+  hosts: Satellite
   roles:
     - satellite-install
 

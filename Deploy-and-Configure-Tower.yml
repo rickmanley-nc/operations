@@ -1,11 +1,11 @@
 ---
 - name: Deploy Tower VM
-  hosts: laptop
+  hosts: Laptop
   roles:
     - tower-deploy-vm
 
 - name: Configure Tower
-  hosts: tower
+  hosts: Tower
   roles:
     - tower-install
 
