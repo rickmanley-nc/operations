@@ -1,0 +1,13 @@
+---
+- name: Deploy Satellite VM
+  hosts: laptop
+  roles:
+    - satellite-deploy-vm
+
+- name: Configure Satellite
+  hosts: satellite
+  roles:
+    - satellite-install
+
+
+#Need to include extra-vars.yml for configuration

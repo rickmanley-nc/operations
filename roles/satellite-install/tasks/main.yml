@@ -35,12 +35,12 @@
   with_items:
     - { name: satellite.example.com, ip: 192.168.126.2 }
 
-- name: Register to RHN and attach Satellite SKU, once Ansible 2.4 released, make pool_ids a variable for input
+- name: Register to RHN and attach Satellite SKU, (change to pool_ids when Ansible 2.4 is released)
   redhat_subscription:
     state: present
     username: "{{ rhn_username }}"
     password: "{{ rhn_password }}"
-# need ansible2.4 for pool_ids to work    pool_ids: 8a85f98156fed8130156ffeb6a535687
+# need ansible2.4 for pool_ids to work
     pool: '^(Red Hat Satellite Employee Subscription)$'
 
 - name: Disable All Repositories

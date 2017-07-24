@@ -1,0 +1,13 @@
+---
+- name: Deploy Tower VM
+  hosts: laptop
+  roles:
+    - tower-deploy-vm
+
+- name: Configure Tower
+  hosts: tower
+  roles:
+    - tower-install
+
+
+#Need to include extra-vars.yml for configuration
