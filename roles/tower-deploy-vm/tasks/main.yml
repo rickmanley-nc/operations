@@ -1,9 +1,12 @@
 ---
 - name: Copy Gold Image to /home/rnelson/Images/ (tower.demo.com pass/redhat)
   command: cp -r /home/rnelson/Images/original/GOLD-tower.qcow2 /home/rnelson/Images/DEMO-Tower.qcow2
+  tags: tower
 
-- name: Import New Satellite Disk Image
+- name: Provision Gold Image as DEMO-Tower
   command: virt-install --name DEMO-Tower --ram 4096 --vcpus 1 --network bridge=virbr3 --disk path=/home/rnelson/Images/DEMO-Tower.qcow2 --import --noautoconsole
+  tags: tower
+
 # 1. Create VM: 1 vCPU, 4096 GB RAM, 40 GB Storage, RHEL 7.3 - place on sat-isolated network with the following static ip info:
 # Configure static networking as
 # IP -  192.168.126.3
