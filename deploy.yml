@@ -4,5 +4,3 @@
   roles:
     - satellite-deploy-vm
     - tower-deploy-vm
-    - cloudforms-deploy-vm
-    - rhel7-deploy-vm
