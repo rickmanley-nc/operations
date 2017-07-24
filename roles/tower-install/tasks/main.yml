@@ -45,11 +45,11 @@
     remote_src: yes
   tags: tower
 
-- name: copy over 'inventory' file with updated passwords
-  tags: tower
+#- name: copy over 'inventory' file with updated passwords
+#  tags: tower
 
-- name: execute setup.sh script
-  tags: tower
+#- name: execute setup.sh script
+#  tags: tower
 
-- name: create orgs, teams, users, projects, templates, workflow templates
-  tags: tower
+#- name: create orgs, teams, users, projects, templates, workflow templates
+#  tags: tower
