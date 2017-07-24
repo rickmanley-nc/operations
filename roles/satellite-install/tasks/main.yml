@@ -71,6 +71,15 @@
     - puppet-foreman_scap_client
   tags: satellite
 
+- name: Add Hammer password
+  lineinfile:
+    path: /etc/hammer/cli.modules.d/foreman.yml
+    regexp: 'password'
+    line: ':password: 'redhat'
+    state: present
+    backrefs: yes
+  tags: satellite
+
 - name: Run satellite-installer (look in github for examples... this can all be done through variables, and done without the raw module)
   raw: satellite-installer -v --scenario satellite --foreman-initial-organization "RedHat" --foreman-initial-location "RDU" --foreman-admin-password redhat --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone demo.com --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.100 192.168.126.150" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
   tags: satellite
@@ -84,7 +93,6 @@
     backrefs: yes
   tags: satellite
 
-#- name: uncomment and correct the password section of /etc/hammer/cli.modules.d/foreman.yml. ***is this needed?***
 - name: Download manifest from Laptop
   get_url:
     url: http://192.168.126.1/Satellite_61_Latest.zip
