@@ -75,7 +75,7 @@
   lineinfile:
     path: /etc/hammer/cli.modules.d/foreman.yml
     regexp: 'password'
-    line: ':password: 'redhat'
+    line: ':password: \'redhat\''
     state: present
     backrefs: yes
   tags: satellite
