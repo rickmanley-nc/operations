@@ -3,5 +3,6 @@
   name: deploy image based off of a clone
   roles:
     - satellite-deploy-vm
+    - tower-deploy-vm
     - cloudforms-deploy-vm
     - rhel7-deploy-vm
