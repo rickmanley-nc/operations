@@ -33,7 +33,7 @@
       {{ item.ip }} {{ item.name }}
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
   with_items:
-    - { name: satellite.example.com, ip: 192.168.126.2 }
+    - { name: satellite.demo.com, ip: 192.168.126.2 }
 
 - name: Register to RHN and attach Satellite SKU, (change to pool_ids when Ansible 2.4 is released)
   redhat_subscription:
