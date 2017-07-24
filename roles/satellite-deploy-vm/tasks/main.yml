@@ -15,7 +15,7 @@
 # Netmask - 255.255.255.0
 # Gateway - 192.168.126.1
 # DNS - 192.168.126.1 (note: this is temporary. After we install Satellite, we'll change this to the IP of the Satellite as it will be running DNS)
-# 3. Ensure partition layout has just "/" at 120 GiB, "swap" at 4096 MiB, and "/boot" at 250 MiB
+# 3. Ensure partition layout has just "/" at 120.8 GiB, "swap" at 4096 MiB, and "/boot" at 200 MiB
 # 4. Clone disk/image/vm as gold image.
 # 5. build new image...
 

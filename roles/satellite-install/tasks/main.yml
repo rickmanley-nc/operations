@@ -85,7 +85,7 @@
   tags: satellite
 
 #- name: uncomment and correct the password section of /etc/hammer/cli.modules.d/foreman.yml. ***is this needed?***
-- name: Copy over manifest
+- name: Download manifest from Laptop
   get_url:
     url: http://192.168.126.1/Satellite_61_Latest.zip
     dest: /root/Satellite_61_Latest.zip
