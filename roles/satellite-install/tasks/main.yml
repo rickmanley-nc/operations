@@ -120,3 +120,47 @@
 - name: Enable RHEL 7 Server Optional
   command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)'
   tags: satellite
+
+- name: Create Daily Sync Plan
+  command: hammer sync-plan create --name 'Daily Sync' --description 'Daily Synchronization Plan' --organization "RedHat" --interval daily --sync-date $(date +"%Y-%m-%d")" 00:00:00" --enabled yes
+  tags: satellite
+
+- name: Add RHEL product to sync plan
+  command: hammer product set-sync-plan --name 'Red Hat Enterprise Linux Server' --organization "RedHat" --sync-plan 'Daily Sync'
+  tags: satellite
+
+- name: Create Development Environment
+  command: hammer lifecycle-environment create --organization "RedHat" --description 'Development' --name 'Development' --label development --prior Library
+  tags: satellite
+
+- name: Create Acceptance Environment
+  command: hammer lifecycle-environment create --organization "RedHat" --description 'Acceptance' --name 'Acceptance' --label acceptance --prior 'Development'
+  tags: satellite
+
+- name: Create Production Environment
+  command: hammer lifecycle-environment create --organization "RedHat" --description 'Production' --name 'Production' --label production --prior 'Acceptance'
+  tags: satellite
+
+- name: Upload SCAP contents
+  command: foreman-rake foreman_openscap:bulk_upload:default
+  tags: satellite
+
+- name: Create content view
+  command: hammer content-view create --organization "RedHat" --name 'RHEL7_Base' --label rhel7_base --description 'Core Build for RHEL 7'
+  tags: satellite
+
+- name: Add repositories to content views
+  command: hammer content-view add-repository --organization "RedHat" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository {{ item }}
+  with_items:
+    - Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server
+    - Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64
+    - Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.3
+    - Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64
+    - Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server
+  tags: satellite
+
+#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'
+#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64'
+#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.3'
+#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64'
+#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server'
