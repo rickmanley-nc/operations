@@ -150,7 +150,7 @@
   tags: satellite
 
 - name: Add repositories to content views
-  command: hammer content-view add-repository --organization "RedHat" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository {{ item }}
+  command: hammer content-view add-repository --organization "RedHat" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository '{{ item }}'
   with_items:
     - "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server"
     - "Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64"
