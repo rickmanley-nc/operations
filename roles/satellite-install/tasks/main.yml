@@ -109,8 +109,8 @@
   command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)'
   tags: satellite
 
-- name: Enable RHEL 7.2 Kickstart
-  command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.2' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
+- name: Enable RHEL 7.3 Kickstart
+  command: hammer repository-set enable --organization "RedHat" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.3' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
   tags: satellite
 
 - name: Enable Satellite Tools 6.2 (for RHEL 7 Server)
@@ -159,8 +159,43 @@
     - "Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server"
   tags: satellite
 
-#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'
-#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64'
-#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.3'
-#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64'
-#hammer content-view add-repository --organization "$ORG" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository 'Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server'
+#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.2'
+#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64'
+#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64'
+#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'
+#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server'
+#hammer content-view publish --organization "$ORG" --name RHEL7_Base --description 'Initial Publishing'
+#hammer content-view version promote --organization "$ORG" --content-view RHEL7_Base --to-lifecycle-environment Development
+#hammer content-view version promote --organization "$ORG" --content-view RHEL7_Base --to-lifecycle-environment Acceptance
+#hammer content-view version promote --organization "$ORG" --content-view RHEL7_Base --to-lifecycle-environment Production
+#hammer activation-key create --organization "$ORG" --description 'Basic RHEL7 Key for Registering to Development' --content-view 'RHEL7_Base' --unlimited-hosts --name ak-Reg_To_Development --lifecycle-environment 'Development'
+#hammer activation-key create --organization "$ORG" --description 'Basic RHEL7 Key for Registering to Acceptance' --content-view 'RHEL7_Base' --unlimited-hosts --name ak-Reg_To_Acceptance --lifecycle-environment 'Acceptance'
+#hammer activation-key create --organization "$ORG" --description 'Basic RHEL7 Key for Registering to Production' --content-view 'RHEL7_Base' --unlimited-hosts --name ak-Reg_To_Production --lifecycle-environment 'Production'
+
+#Remaining tasks:
+#1. add subscription to activation key
+#$ hammer subscription list --organization “$ORG”
+#$ hammer activation-key add-subscription --name _akReg_To_Dev_EL7_ --subscription-id 8 --organization "$ORG"
+#$ hammer activation-key content-override --name _akReg_To_Dev_EL7_ --organization "$ORG" --content-label rhel-7-server-satellite-tools-6.2-rpms --value 1
+#2. update domain:
+#DOMAIN="demo.com'
+#SATELLITE=$(hostname)
+#hammer domain update --name $DOMAIN --organizations "$ORG" --dns $SATELLITE --locations 'RDU'
+#3. create hostgroup
+#hammer hostgroup create --architecture x86_64 --content-source-id 1 --content-view RHEL7_Base --domain $DOMAIN --lifecycle-environment Development --name RHEL7_Dev_Servers --organization "$ORG" --puppet-ca-proxy satellite.$DOMAIN --puppet-proxy $SATELLITE --subnet vlan_126 --partition-table 'Kickstart default' --operatingsystem 'RedHat 7.3' --puppet-classes "motd" --medium "$ORG"/Library/Red_Hat_Server/Red_Hat_Enterprise_Linux_7_Server_Kickstart_x86_64_7_2
+#hammer hostgroup set-parameter --hostgroup "RHEL7_Crash_Servers" --name "kt_activation_keys" --value ak-Reg_To_Development
+#4. create compute resource for LibVirt
+#hammer compute-resource create --description 'LibVirt Compute Resource' --locations RDU --name Libvirt_CR --organizations "$ORG" --url 'qemu+tcp://192.168.126.1/system/' --provider libvirt --set-console-password 0
+#5. During provisioning, a system is automatically updated. This prevents us from demoing Insights and patching
+#/opt/theforeman/tfm/root/usr/share/gems/gems/katello-3.0.0.125/app/views/foreman/unattended/kickstart-katello.erb
+#comment out 'yum -t -y -e 0 update'
+#/opt/theforeman/tfm/root/usr/share/gems/gems/foreman_theme_satellite-0.1.42/app/views/foreman/unattended/kickstart-katello.erb
+#comment out 'yum -t -y -e 0 update'
+#/opt/theforeman/tfm/root/usr/share/gems/gems/foreman_theme_satellite-0.1.31/app/views/foreman/unattended/kickstart-katello.erb
+#/opt/theforeman/tfm/root/usr/share/gems/gems/katello-3.0.0.81/app/views/foreman/unattended/kickstart-katello.erb
+#6. Instead of repo sync, try prepopulating content with content ISOs
+#https://access.redhat.com/articles/1531833   - use content ISOs to prepopulate initial content.
+#7. download http://192.168.126.2/pub/katello-server-ca.crt and import that in your browser. (for vnc/spice console viewing)
+#8. On the Satellite Server, distribute the key to the host.
+# ssh-copy-id -i ~foreman-proxy/.ssh/id_rsa_foreman_proxy.pub
+#root@auth01.example.com
