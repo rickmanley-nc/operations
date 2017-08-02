@@ -122,7 +122,7 @@
   tags: satellite
 
 - name: Create Daily Sync Plan
-  command: hammer sync-plan create --name 'Daily Sync' --description 'Daily Synchronization Plan' --organization "RedHat" --interval daily --sync-date $(date +"%Y-%m-%d")" 00:00:00" --enabled yes
+  raw: hammer sync-plan create --name 'Daily Sync' --description 'Daily Synchronization Plan' --organization "RedHat" --interval daily --sync-date $(date +"%Y-%m-%d")" 00:00:00" --enabled yes
   tags: satellite
 
 - name: Add RHEL product to sync plan
