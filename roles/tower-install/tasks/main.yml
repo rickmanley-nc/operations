@@ -29,7 +29,9 @@
   tags: tower
 
 - name: Enable EPEL Repository
-  command: yum -y install http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+  yum:
+    name: http://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+    state: present
   tags: tower
 
 - name: Install Ansible RPM
