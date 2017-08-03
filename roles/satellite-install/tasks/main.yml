@@ -181,6 +181,7 @@
     - "Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server"
   tags: satellite
 
+#figure out how to do "lazy sync" process so we don't have to wait for each of these to complete...is this needed or am i misunderstanding how the "lazy sync" is supposed to work?
 #hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.2'
 #hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64'
 #hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64'
