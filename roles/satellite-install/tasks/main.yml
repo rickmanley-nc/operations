@@ -219,18 +219,45 @@
   command: hammer domain update --name demo.com --organizations "RedHat" --dns satellite.demo.com --locations 'RDU'
   tags: satellite
 
+- name: Create VLAN_126 subnet
+  command: hammer subnet create --name vlan_126 --dhcp-id 1 --dns-id 1 --tftp-id 1 --organizations RedHat --domains demo.com --locations 'RDU' --network 192.168.126.0 --mask 255.255.255.0 --gateway 192.168.126.1 --from 192.168.126.150 --to 192.168.126.200
+  tags: satellite
 
 
 #figure out how to do "lazy sync" process so we don't have to wait for each of these to complete...is this needed or am i misunderstanding how the "lazy sync" is supposed to work?
-#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.2'
-#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64'
-#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64'
-#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'
-#hammer repository synchronize --organization "$ORG" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server'
-#hammer content-view publish --organization "RedHat" --name RHEL7_Base --description 'Initial Publishing'
-#hammer content-view version promote --organization "RedHat" --content-view RHEL7_Base --to-lifecycle-environment Development
-#hammer content-view version promote --organization "$ORG" --content-view RHEL7_Base --to-lifecycle-environment Acceptance
-#hammer content-view version promote --organization "$ORG" --content-view RHEL7_Base --to-lifecycle-environment Production
+#hammer repository synchronize --organization "RedHat" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.2'
+#hammer repository synchronize --organization "RedHat" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64'
+#hammer repository synchronize --organization "RedHat" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64'
+#hammer repository synchronize --organization "RedHat" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server'
+#hammer repository synchronize --organization "RedHat" --product 'Red Hat Enterprise Linux Server'  --name  'Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server'
+#hammer repository synchronize --organization "RedHat" --product 'Extra Packages for Enterprise Linux' --name 'Extra Packages for Enterprise Linux'
+
+
+- name: Publish Initial RHEL 7 Base Content View
+  command: hammer content-view publish --organization "RedHat" --name RHEL7_Base --description 'Initial Publishing'
+  tags: satellite
+
+- name: Promote Initial RHEL 7 Base Content View to All Environments
+  command: hammer content-view version promote --organization "RedHat" --content-view RHEL7_Base --to-lifecycle-environment '{{ item }}'
+  with_items:
+    - Development
+    - Acceptance
+    - Production
+  tags: satellite
+
+- name: Publish Initial EPEL Content View
+  command: hammer content-view publish --organization "RedHat" --name EPEL --description 'Initial Publishing'
+  tags: satellite
+
+- name: Promote Initial EPEL Content View to only Development Environment
+  command: hammer content-view version promote --organization "RedHat" --content-view EPEL --to-lifecycle-environment Development
+  tags: satellite
+
+##Need##
+# create 2 composite views, then update all references from content views to the correct composite content view
+# composite view of RHEL7_Base + EPEL for Development environment. Then composite view of RHEL7_Base + "perhaps an HA view?" for the Acceptance Environment
+
+
 
 - name: Create Activation Key for Development
   command: hammer activation-key create --organization "RedHat" --description 'Activation Key for Development Environment' --content-view 'RHEL7_Base' --unlimited-hosts --name ak-Reg_To_Development --lifecycle-environment 'Development'
@@ -244,28 +271,46 @@
   command: hammer activation-key create --organization "RedHat" --description 'Activation Key for Production Environment' --content-view 'RHEL7_Base' --unlimited-hosts --name ak-Reg_To_Production --lifecycle-environment 'Production'
   tags: satellite
 
-
-
-
-#Remaining tasks:
-#1. add subscription to activation key
 #$ hammer subscription list --organization “RedHat”
 #$ hammer activation-key add-subscription --name _akReg_To_Dev_EL7_ --subscription-id 8 --organization "$ORG"
 #$ hammer activation-key content-override --name _akReg_To_Dev_EL7_ --organization "$ORG" --content-label rhel-7-server-satellite-tools-6.2-rpms --value 1
-#2. Create vlan_126 subnet
-#3. create hostgroup
-#hammer hostgroup create --architecture x86_64 --content-source-id 1 --content-view RHEL7_Base --domain demo.com --lifecycle-environment Development --name RHEL7_Dev_Servers --organization "RedHat" --puppet-ca-proxy satellite.demo.com --puppet-proxy satellite.demo.com --subnet vlan_126 --partition-table 'Kickstart default' --operatingsystem 'RedHat 7.3' --medium "RedHat"/Library/Red_Hat_Server/Red_Hat_Enterprise_Linux_7_Server_Kickstart_x86_64_7_3
-#hammer hostgroup set-parameter --hostgroup "RHEL7_Crash_Servers" --name "kt_activation_keys" --value ak-Reg_To_Development
-#4. During provisioning, a system is automatically updated. This prevents us from demoing Insights and patching
+
+- name: Create 'Kickstart default' Host Group for Development. Could change this to kickstart on 7.4 to show testing out new kickstart trees in Dev environment. Need to change this to a group of kickstart profiles (idm, gluster, ceph, openshift, ha, etc)
+  command: hammer hostgroup create --architecture x86_64 --content-source-id 1 --content-view RHEL7_Base --domain demo.com --lifecycle-environment Development --name RHEL7_Development_Servers --organization "RedHat" --puppet-ca-proxy satellite.demo.com --puppet-proxy satellite.demo.com --subnet vlan_126 --partition-table 'Kickstart default' --operatingsystem 'RedHat 7.3' --medium RedHat/Library/Red_Hat_Server/Red_Hat_Enterprise_Linux_7_Server_Kickstart_x86_64_7_3
+  tags: satellite
+
+- name: Set Host Group "RHEL 7 Development Servers" activation keys to "ak-Reg_To_Development"
+  command: hammer hostgroup set-parameter --hostgroup "RHEL7_Development_Servers" --name "kt_activation_keys" --value ak-Reg_To_Development
+  tags: satellite
+
+- name: Create 'Kickstart default' Host Group for Acceptance. Need to change this to a group of kickstart profiles (idm, gluster, ceph, openshift, ha, etc)
+  command: hammer hostgroup create --architecture x86_64 --content-source-id 1 --content-view RHEL7_Base --domain demo.com --lifecycle-environment Acceptance --name RHEL7_Acceptance_Servers --organization "RedHat" --puppet-ca-proxy satellite.demo.com --puppet-proxy satellite.demo.com --subnet vlan_126 --partition-table 'Kickstart default' --operatingsystem 'RedHat 7.3' --medium RedHat/Library/Red_Hat_Server/Red_Hat_Enterprise_Linux_7_Server_Kickstart_x86_64_7_3
+  tags: satellite
+
+- name: Set Host Group "RHEL 7 Acceptance Servers" activation keys to "ak-Reg_To_Development"
+  command: hammer hostgroup set-parameter --hostgroup "RHEL7_Acceptance_Servers" --name "kt_activation_keys" --value ak-Reg_To_Acceptance
+  tags: satellite
+
+- name: Create 'Kickstart default' Host Group for Production. Need to change this to a group of kickstart profiles (idm, gluster, ceph, openshift, ha, etc)
+  command: hammer hostgroup create --architecture x86_64 --content-source-id 1 --content-view RHEL7_Base --domain demo.com --lifecycle-environment Production --name RHEL7_Production_Servers --organization "RedHat" --puppet-ca-proxy satellite.demo.com --puppet-proxy satellite.demo.com --subnet vlan_126 --partition-table 'Kickstart default' --operatingsystem 'RedHat 7.3' --medium RedHat/Library/Red_Hat_Server/Red_Hat_Enterprise_Linux_7_Server_Kickstart_x86_64_7_3
+  tags: satellite
+
+- name: Set Host Group "RHEL 7 Production Servers" activation keys to "ak-Reg_To_Production"
+  command: hammer hostgroup set-parameter --hostgroup "RHEL7_Production_Servers" --name "kt_activation_keys" --value ak-Reg_To_Production
+  tags: satellite
+
+#During provisioning, a system is automatically updated. This prevents us from demoing Insights and patching
 #/opt/theforeman/tfm/root/usr/share/gems/gems/katello-3.0.0.125/app/views/foreman/unattended/kickstart-katello.erb
 #comment out 'yum -t -y -e 0 update'
 #/opt/theforeman/tfm/root/usr/share/gems/gems/foreman_theme_satellite-0.1.42/app/views/foreman/unattended/kickstart-katello.erb
 #comment out 'yum -t -y -e 0 update'
 #/opt/theforeman/tfm/root/usr/share/gems/gems/foreman_theme_satellite-0.1.31/app/views/foreman/unattended/kickstart-katello.erb
 #/opt/theforeman/tfm/root/usr/share/gems/gems/katello-3.0.0.81/app/views/foreman/unattended/kickstart-katello.erb
-#5. Instead of repo sync, try prepopulating content with content ISOs
+#you may need to run the following after making these edits:
+#foreman-rake db:seed
+
+#Instead of repo sync, try prepopulating content with content ISOs? Could it be faster than lazy sync or going over internet?
 #https://access.redhat.com/articles/1531833   - use content ISOs to prepopulate initial content.
-#6. download http://192.168.126.2/pub/katello-server-ca.crt and import that in your browser. (for vnc/spice console viewing)
-#7. On the Satellite Server, distribute the key to the host.
-# ssh-copy-id -i ~foreman-proxy/.ssh/id_rsa_foreman_proxy.pub
-#root@auth01.example.com
+
+
+#set up ssh keys
