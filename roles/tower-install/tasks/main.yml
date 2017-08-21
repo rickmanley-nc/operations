@@ -55,3 +55,25 @@
 
 #- name: create orgs, teams, users, projects, templates, workflow templates
 #  tags: tower
+
+#- Add epel
+#- yum install ansible
+#- download bundled tower installer
+#- get license
+#- run bundled installer
+#- using tower cli or tower ansible modules:
+#	- import license
+#	- create 2 orgs
+#	- create 2 teams per org
+#	- create users
+#	- create credentials
+#		- laptop
+#		- demo_env
+#	- create project
+#		- link github
+#	- setup inventory
+#		-groups: laptop, satellite
+#	- setup templates
+#		- config satellite
+#		- deploy satellite
+#		- deploy and config workflow
