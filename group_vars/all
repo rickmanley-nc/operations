@@ -1,11 +1,23 @@
 ---
-#Satellite variables
+#Satellite Configure section#
 satellite_admin_username: admin
 satellite_admin_password: redhat
 satellite_organization: RedHat
 satellite_location: RDU
 satellite_domain: demo.com
 
+###testing###
+#satellite_hammer_repos:
+#  - { product: "{{ PROD }}", release: "{{ RELEASE }}", basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.kickstart.0}}", test: "{{SAT_MAP.kickstart.1}}" }
+#  - { product: "{{ PROD }}", release: ""             , basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.extras.0}}"   , test: "{{SAT_MAP.extras.1}}" }
+#  - { product: "{{ PROD }}", release: ""             , basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.sattools.0}}" , test: "{{SAT_MAP.sattools.1}}" }
+#  - { product: "{{ PROD }}", release: "{{ RELEASE }}", basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.rhcommon.0}}" , test: "{{SAT_MAP.rhcommon.1}}" }
+#  - { product: "{{ PROD }}", release: "{{ RELEASE }}", basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.base.0}}"     , test: "{{SAT_MAP.base.1}}" }
+
+#satellite_hammer_environments:
+#  - { name: "Development", description: "Development", prior: "Library" }
+#  - { name: "Acceptance", description: "Acceptance", prior: "Development" }
+#  - { name: "Production", description: "Production", prior: "Acceptance" }
 
 satellite_repos:
   - rhel-7-server-rpms
@@ -26,3 +38,12 @@ satellite_ports:
   - '67/udp'   # DHCP
   - '68/udp'   # DHCP
   - '69/udp'   # TFTP
+
+
+
+#Laptop Configure section#
+
+laptop_ports:
+  - '80/tcp'   # HTTP
+  - '443/tcp'  # HTTPS
+  - '22/tcp'   # SSH
