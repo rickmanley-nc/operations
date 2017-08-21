@@ -7,7 +7,7 @@
 
 - name: Configure firewalld
   firewalld:
-    service: "{{ item }}"
+    port: "{{ item }}"
     permanent: true
     immediate: yes
     state: enabled
