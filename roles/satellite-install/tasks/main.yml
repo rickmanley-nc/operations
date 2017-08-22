@@ -1,18 +1,28 @@
 ---
-- name: Wait for SSH to come up
-  local_action:
-    module: wait_for
-      port: 22
-      delay: 60
-      timeout: 300
-      state: started
+- name: Pause to allow SSH to be available (change this to wait_for)
+  pause:
+    seconds: 60
+  tags: satellite
+
+- name: Check to see if Satellite is answering
+  uri:
+      url: "https://{{ satellite_hostname }}/api/organizations"
+      user: "{{ satellite_admin_username }}"
+      password: "{{ satellite_admin_password }}"
+      force_basic_auth: yes
+  register: satellite_is_installed
+  ignore_errors: yes
+  tags: satellite
+
+- name: Set the 'satellite_is_installed' variable
+  set_fact:
+    satellite_is_installed: "{{ False if satellite_is_installed.failed | default(False) or satellite_is_installed.status != 200 else True }}"
   tags: satellite
 
 - name: Start and Enable firewalld
   systemd: name=firewalld state=started enabled=yes
+  when: not satellite_is_installed
   tags: satellite
-
-#break the playbook down into separate blocks of tasks... system prep, repo creation (EPEL, RHEL, HA), etc
 
 - name: Configure firewalld
   firewalld:
@@ -21,6 +31,7 @@
     immediate: yes
     state: enabled
   with_items: "{{ satellite_ports }}"
+  when: not satellite_is_installed
   tags: satellite
 
 - name: Add mappings to /etc/hosts, This needs to call the hostname instead of having it hard coded
@@ -30,8 +41,9 @@
       {{ item.ip }} {{ item.name }}
     marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
   with_items:
-    - { name: satellite.demo.com, ip: 192.168.126.2 }
+    - { name: {{ satellite_hostname }}, ip: 192.168.126.2 }
     - { name: tower.demo.com, ip: 192.168.126.3 }
+  when: not satellite_is_installed
   tags: satellite
 
 - name: Register to RHN and attach Satellite SKU, (change to pool_ids when Ansible 2.4 is released)
@@ -41,19 +53,23 @@
     password: "{{ rhn_password }}"
 # need ansible2.4 for pool_ids to work
     pool: '^(Red Hat Satellite Employee Subscription)$'
+  when: not satellite_is_installed
   tags: satellite
 
 - name: Disable All Repositories
   raw: subscription-manager repos --disable "*"
+  when: not satellite_is_installed
   tags: satellite
 
 - name: Enable Satellite repositories
   command: /usr/sbin/subscription-manager repos --enable="{{item}}"
   with_items: "{{ satellite_repos }}"
+  when: not satellite_is_installed
   tags: satellite
 
 - name: clean out yum metadata
   command: yum clean all
+  when: not satellite_is_installed
   tags: satellite
 
 - name: Install Satellite RPMs
@@ -63,6 +79,7 @@
   with_items:
     - satellite
     - puppet-foreman_scap_client
+  when: not satellite_is_installed
   tags: satellite
 
 - name: Download foreman.yml from Laptop for Hammer configs
@@ -73,7 +90,8 @@
   tags: satellite
 
 - name: Run satellite-installer
-  raw: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}" --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone "{{satellite_domain}}" --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.100 192.168.126.150" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
+  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}" --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone "{{satellite_domain}}" --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.150 192.168.126.200" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
+  when: "{{ satellite_is_installed.failed | default(False) or satellite_is_installed.status != 200 }}"
   tags: satellite
 
 - name: Update resolv.conf to have Satellite point to itself for DNS resolution
@@ -100,7 +118,7 @@
   tags: satellite
 
 ##Need##
-#BZ 1479765 is tracking "Commands for creating, updating and deleting compute profiles and attributes". Currently need to manually update compute profiles
+#BZ 1479765 is tracking "Commands for creating, updating and deleting compute profiles and attributes". Currently, we have to manually update compute profiles
 
 - name: Enable "Lazy Sync" on-demand policy for all Repositories
   command: hammer settings set --name default_download_policy --value on_demand
