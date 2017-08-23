@@ -1,8 +1,6 @@
 ---
-- name: Pause to allow SSH to be available (change this to wait_for)
-  pause:
-    seconds: 60
-  tags: satellite
+##Need##
+# create multiple 'when' conditionals to break down each block of tasks. Skip each block if it's already been done.
 
 - name: Check to see if Satellite is answering
   uri:
