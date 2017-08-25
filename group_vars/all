@@ -5,7 +5,7 @@ satellite_admin_password: redhat
 satellite_organization: RedHat
 satellite_location: RDU
 satellite_domain: demo.com
-satellite_hostname: satellite.demo.com
+satellite_hostname: satellite-rnelson.demo.com
 
 ###testing###
 #satellite_hammer_repos:
