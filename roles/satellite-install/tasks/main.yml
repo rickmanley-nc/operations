@@ -44,15 +44,22 @@
   when: not satellite_is_installed
   tags: satellite
 
+#- name: Register to RHN and attach Satellite SKU, (change to pool_ids when Ansible 2.4 is released)
+#  redhat_subscription:
+#    state: present
+#    username: "{{ rhn_username }}"
+#    password: "{{ rhn_password }}"
+# need ansible2.4 for pool_ids to work
+# need to manually delete the system in customer portal... find out a way to do the --force option? Currently --force not supported in redhat_subscription
+#    pool: '^(Red Hat Satellite Employee Subscription)$'
+#  when: not satellite_is_installed
+#  tags: satellite
 
 - name: Register to RHN and attach Satellite SKU, (change to pool_ids when Ansible 2.4 is released)
   redhat_subscription:
     state: present
-    username: "{{ rhn_username }}"
-    password: "{{ rhn_password }}"
-# need ansible2.4 for pool_ids to work
-# need to manually delete the system in customer portal... find out a way to do the --force option? Currently --force not supported in redhat_subscription
-    pool: '^(Red Hat Satellite Employee Subscription)$'
+    activationkey: "{{ satellite_activation_key }}"
+    org_id: "{{ rhn_org_id }}"
   when: not satellite_is_installed
   tags: satellite
 
