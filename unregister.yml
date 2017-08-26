@@ -5,3 +5,4 @@
   tasks:
     - name: Unregister VM from Customer Portal
       command: subscription-manager unregister
+      ignore_errors: yes

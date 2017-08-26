@@ -4,7 +4,7 @@
 
   tasks:
     - name: Shutdown VM
-      raw: /usr/bin/virsh destroy '{{ survey_del_hostname }}'
+      command: /usr/bin/virsh destroy '{{ survey_del_hostname }}'
       tags: satellite
 
     - name: Delete VM and attached storage from LibVirt
