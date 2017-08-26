@@ -1,6 +1,6 @@
 ---
 ##Need##
-# create multiple 'when' conditionals to break down each block of tasks. Skip each block if it's already been done.
+# create multiple 'when' conditionals to break down each block of tasks. Skip each block if it's already been done? Or just create nested roles?
 
 - name: Check to see if Satellite is answering
   uri:
@@ -81,11 +81,8 @@
 
 - name: Install Satellite RPMs
   yum:
-    name: "{{ item }}"
+    name: satellite
     state: latest
-  with_items:
-    - satellite
-    - puppet-foreman_scap_client
   when: not satellite_is_installed
   tags: satellite
 
@@ -220,11 +217,6 @@
 - name: Create Production Environment
   command: hammer lifecycle-environment create --organization "{{satellite_organization}}" --description 'Production' --name 'Production' --label production --prior 'Acceptance'
   tags: satellite
-
-# planned on moving to CloudForms for OpenSCAP compliance
-#- name: Upload SCAP contents
-#  command: foreman-rake foreman_openscap:bulk_upload:default
-#  tags: satellite
 
 - name: Create RHEL 7 Base Content View
   command: hammer content-view create --organization "{{satellite_organization}}" --name 'RHEL7_Base' --label rhel7_base --description 'Core Build for RHEL 7'
