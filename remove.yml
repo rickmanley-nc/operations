@@ -1,0 +1,12 @@
+---
+- name: Delete VM and Storage
+  hosts: all
+
+  tasks:
+    - name: Shutdown VM
+      command: virsh destroy '{{ survey_del_hostname}}'
+      tags: satellite
+
+    - name: Delete VM and attached storage from LibVirt
+      command: virsh undefine '{{ survey_del_hostname}}' --remove-all-storage
+      tags: satellite

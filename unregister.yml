@@ -1,6 +1,6 @@
 ---
 - name: unregister
-  hosts: '{{ survey_hostname }}'
+  hosts: '{{ survey_unreg_hostname }}'
 
   tasks:
     - name: Unregister VM from Customer Portal
