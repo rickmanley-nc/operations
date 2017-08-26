@@ -94,6 +94,7 @@
     url: http://192.168.126.1/foreman.yml
     dest: /etc/hammer/cli.modules.d/
     mode: 0755
+  when: not satellite_is_installed
   tags: satellite
 
 - name: Run satellite-installer
@@ -108,6 +109,7 @@
     line: 'nameserver 192.168.126.2'
     state: present
     backrefs: yes
+  when: not satellite_is_installed
   tags: satellite
 
 - name: Download manifest from Laptop
@@ -287,7 +289,7 @@
   tags: satellite
 
 - name: Create Development-RHEL Composite Content View (RHEL7_Base + High_Availability + EPEL)
-  command: hammer content-view create --composite --organization "{{satellite_organization}}" --name 'Development-RHEL' --label composite_D_rhel7_epel_high_availability --description 'Combination of RHEL7_Base, High Availability, and EPEL for Development'
+  command: hammer content-view create --composite --organization "{{satellite_organization}}" --name 'Development-RHEL' --label composite_D_rhel7_high_availability_epel --description 'Combination of RHEL7_Base, High Availability, and EPEL for Development'
   tags: satellite
 
 - name: Create Acceptance-RHEL Composite Content View (RHEL7_Base + High Availability)
@@ -323,7 +325,10 @@
   tags: satellite
 
 - name: Promote composite content view Acceptance-RHEL
-  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view Acceptance-RHEL --to-lifecycle-environment 'Acceptance'
+  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view Acceptance-RHEL --to-lifecycle-environment '{{ item }}'
+  with_items:
+    - Development
+    - Acceptance
   tags: satellite
 
 - name: Publish composite content view Production-RHEL
@@ -331,7 +336,11 @@
   tags: satellite
 
 - name: Promote composite content view Production-RHEL
-  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view Production-RHEL --to-lifecycle-environment 'Production'
+  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view Production-RHEL --to-lifecycle-environment '{{ item }}'
+  with_items:
+    - Development
+    - Acceptance
+    - Production
   tags: satellite
 
 ##add Content View Filters to show a monthly patching policy... which really means... create a monthly patching policy from end-to-end
