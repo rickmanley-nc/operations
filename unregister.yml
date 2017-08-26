@@ -1,0 +1,4 @@
+---
+- name: Unregister VM from Customer Portal
+  hosts: '{{ survey_hostname }}'
+  command: subscription-manager unregister
