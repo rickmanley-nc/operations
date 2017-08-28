@@ -178,7 +178,7 @@
   with_items:
     - "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server"
     - "Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64"
-    - "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.3"
+    - "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.4"
     - "Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64"
     - "Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server"
   tags: satellite
@@ -212,7 +212,7 @@
   with_items:
     - "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server"
     - "Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64"
-    - "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.3"
+    - "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.4"
     - "Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64"
     - "Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server"
   tags: satellite
