@@ -48,3 +48,6 @@ laptop_ports:
   - '80/tcp'   # HTTP
   - '443/tcp'  # HTTPS
   - '22/tcp'   # SSH
+
+
+#Tower Configure section

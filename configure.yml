@@ -6,4 +6,3 @@
     - tower-install
 #    - laptop-configure
 # change roles to "install-*" for easier reading
-#Need to include extra-vars.yml for configuration

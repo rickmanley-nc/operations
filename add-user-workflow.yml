@@ -1,7 +1,0 @@
----
-- hosts: all
-  name: Create localuser
-
-  tasks:
-    - name: Create localuser
-      user: name=localuser groups=wheel

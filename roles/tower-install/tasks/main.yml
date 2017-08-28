@@ -1,14 +1,9 @@
 ---
-- name: Add mappings to /etc/hosts, This needs to call the hostname instead of having it hard coded
-  blockinfile:
-    path: /etc/hosts
-    block: |
-      {{ item.ip }} {{ item.name }}
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
-  with_items:
-    - { name: tower.demo.com, ip: 192.168.126.3 }
-    - { name: satellite.demo.com, ip: 192.168.126.2 }
-    - { name: rnelsonlaptop.demo.com, ip: 192.168.126.1 }
+- name: Download /etc/hosts file from Laptop
+  get_url:
+    url: http://192.168.126.1/hosts
+    dest: /etc/hosts
+    mode: 0644
   tags: tower
 
 - name: Register to RHN and attach RHEL Server SKU, (change to pool_ids when Ansible 2.4 is released)
@@ -21,11 +16,11 @@
   tags: tower
 
 - name: Disable All Repositories
-  raw: subscription-manager repos --disable "*"
+  command: subscription-manager repos --disable "*"
   tags: tower
 
 - name: Enable Server, Extras, and Optional Repositories
-  raw: subscription-manager repos --enable rhel-7-server-rpms --enable rhel-7-server-extras-rpms --enable rhel-7-server-optional-rpms
+  command: subscription-manager repos --enable rhel-7-server-rpms --enable rhel-7-server-extras-rpms --enable rhel-7-server-optional-rpms
   tags: tower
 
 - name: Enable EPEL Repository
@@ -43,18 +38,28 @@
 - name: Download and Unarchive Ansible Tower Bundle Installer
   unarchive:
     src: https://releases.ansible.com/ansible-tower/setup-bundle/ansible-tower-setup-bundle-latest.el7.tar.gz
-    dest: /tmp
+    dest: /root/
     remote_src: yes
   tags: tower
 
-#- name: copy over 'inventory' file with updated passwords
-#  tags: tower
+- name: Download inventory file from Laptop
+  get_url:
+    url: http://192.168.126.1/inventory
+    dest: /root/ansible-tower-setup-bundle-3.1.4-1.el7/
+# can we make the dest folder not hardcoded?
+    mode: 0644
+  tags: tower
 
 #- name: execute setup.sh script
+# how to execute setup.sh script that's bundled in tar.gz file? When we untar the bundle, the directory is based on the version of Tower like this:
+# cd ansible-tower-setup-bundle-3.1.4-1.el7/
 #  tags: tower
 
-#- name: create orgs, teams, users, projects, templates, workflow templates
-#  tags: tower
+# restore from backup
+# ./setup -b creates tower-backup-2017-08-28-02:16:06.tar.gz
+# host this backup on Laptop, and run the restore like so:
+# ./setup -e 'restore_backup_file=/root/tower-backup-2017.tar.gz'
+
 
 #- Add epel
 #- yum install ansible
@@ -63,8 +68,8 @@
 #- run bundled installer
 #- using tower cli or tower ansible modules:
 #	- import license
-#	- create 2 orgs
-#	- create 2 teams per org
+#	- create 1 org
+#	- create 2 teams
 #	- create users
 #	- create credentials
 #		- laptop

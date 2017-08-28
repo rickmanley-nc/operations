@@ -1,8 +1,0 @@
----
-- name: Shutdown VM
-  command: virsh destroy DEMO-Satellite
-  tags: satellite
-
-- name: Delete VM and attached storage from LibVirt
-  command: virsh undefine DEMO-Satellite --remove-all-storage
-  tags: satellite

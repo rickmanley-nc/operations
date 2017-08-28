@@ -29,15 +29,11 @@
   when: not satellite_is_installed
   tags: satellite
 
-- name: Add mappings to /etc/hosts, This needs to call the hostname instead of having it hard coded
-  blockinfile:
-    path: /etc/hosts
-    block: |
-      {{ item.ip }} {{ item.name }}
-    marker: "# {mark} ANSIBLE MANAGED BLOCK {{ item.name }}"
-  with_items:
-    - { name: satellite.demo.com, ip: 192.168.126.2 }
-    - { name: tower.demo.com, ip: 192.168.126.3 }
+- name: Download /etc/hosts file from Laptop
+  get_url:
+    url: http://192.168.126.1/hosts
+    dest: /etc/hosts
+    mode: 0644
   when: not satellite_is_installed
   tags: satellite
 
@@ -68,11 +64,6 @@
 - name: Enable Satellite repositories
   command: /usr/sbin/subscription-manager repos --enable="{{item}}"
   with_items: "{{ satellite_repos }}"
-  when: not satellite_is_installed
-  tags: satellite
-
-- name: clean out yum metadata
-  command: yum clean all
   when: not satellite_is_installed
   tags: satellite
 
@@ -265,18 +256,15 @@
   tags: satellite
 
 ##Need##
-# add SUSE or Solaris Product to show Foreman managing these.
-
-##Need##
 # add subscriptions to activation keys and enable the correct channels for each environment... look at using --output to be able to parse by field.
 #$ hammer subscription list --organization “RedHat”
 #$ hammer activation-key add-subscription --name _akReg_To_Dev_EL7_ --subscription-id 8 --organization "$ORG"
 #$ hammer activation-key content-override --name _akReg_To_Dev_EL7_ --organization "$ORG" --content-label rhel-7-server-satellite-tools-6.2-rpms --value 1
 
 - name: Update Domain Settings
-  command: hammer domain update --name "{{satellite_domain}}" --organizations "{{satellite_organization}}" --dns "{{satellite_hostname}}" --locations "{{satellite_location}}"
+  command: hammer domain update --name "{{satellite_domain}}" --organizations "{{satellite_organization}}" --locations "{{satellite_location}}"
   tags: satellite
 
-#add location
-#Need#
+##Need##
+# add Fedora / CentOS product to show Foreman managing these.
 #set up ssh keys
