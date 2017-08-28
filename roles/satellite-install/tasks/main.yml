@@ -371,6 +371,8 @@
   command: hammer hostgroup create --architecture x86_64 --content-source-id 1 --content-view Development-RHEL --domain "{{satellite_domain}}" --lifecycle-environment Development --name RHEL7_Development_Servers --organization "{{satellite_organization}}" --puppet-ca-proxy "{{satellite_hostname}}" --puppet-proxy "{{satellite_hostname}}" --subnet vlan_126 --partition-table 'Kickstart default' --operatingsystem 'RedHat 7.3' --medium RedHat/Library/Red_Hat_Server/Red_Hat_Enterprise_Linux_7_Server_Kickstart_x86_64_7_3
   tags: satellite
 
+#add location
+
 - name: Set Host Group "RHEL 7 Development Servers" activation keys to "ak-Reg_To_Development"
   command: hammer hostgroup set-parameter --hostgroup "RHEL7_Development_Servers" --name "kt_activation_keys" --value ak-Reg_To_Development
   tags: satellite
@@ -378,6 +380,8 @@
 - name: Create 'Kickstart default' Host Group for Acceptance. Need to change this to a group of kickstart profiles (idm, gluster, ceph, openshift, ha, etc)
   command: hammer hostgroup create --architecture x86_64 --content-source-id 1 --content-view Acceptance-RHEL --domain "{{satellite_domain}}" --lifecycle-environment Acceptance --name RHEL7_Acceptance_Servers --organization "{{satellite_organization}}" --puppet-ca-proxy "{{satellite_hostname}}" --puppet-proxy "{{satellite_hostname}}" --subnet vlan_126 --partition-table 'Kickstart default' --operatingsystem 'RedHat 7.3' --medium RedHat/Library/Red_Hat_Server/Red_Hat_Enterprise_Linux_7_Server_Kickstart_x86_64_7_3
   tags: satellite
+
+#add locations
 
 - name: Set Host Group "RHEL 7 Acceptance Servers" activation keys to "ak-Reg_To_Acceptance"
   command: hammer hostgroup set-parameter --hostgroup "RHEL7_Acceptance_Servers" --name "kt_activation_keys" --value ak-Reg_To_Acceptance
