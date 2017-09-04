@@ -1,4 +1,8 @@
 ---
+- name: Set hostname
+  command: hostnamectl set-hostname {{ idm_hostname }}
+  tags: idm
+
 - name: Start and Enable firewalld
   systemd: name=firewalld state=started enabled=yes
   tags: idm

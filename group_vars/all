@@ -4,8 +4,8 @@ satellite_admin_username: admin
 satellite_admin_password: redhat
 satellite_organization: RedHat
 satellite_location: RDU
-satellite_domain: demo.com
-satellite_hostname: satellite.demo.com
+satellite_domain: rnelson-demo.com
+satellite_hostname: satellite.rnelson-demo.com
 
 satellite_repos:
   - rhel-7-server-rpms
@@ -46,6 +46,8 @@ laptop_ports:
 
 
 #IdM Configure Section
+idm_hostname: idm.rnelson-demo.com
+
 idm_ports:
   - '80/tcp'   # HTTP
   - '443/tcp'  # HTTPS

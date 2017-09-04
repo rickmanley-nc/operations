@@ -1,5 +1,5 @@
 ---
-- name: Copy Gold Image to /home/rnelson/Images/ (satellite.demo.com pass/redhat)
+- name: Copy Gold Image to /home/rnelson/Images/
   command: cp -r /home/rnelson/Images/original/GOLD-Satellite.qcow2 /home/rnelson/Images/DEMO-Satellite.qcow2
   tags: satellite
 
@@ -10,7 +10,7 @@
 - name: Wait for SSH to come up on Satellite
   local_action:
     module: wait_for
-      host=satellite.demo.com
+      host=satellite.rnelson-demo.com
       port=22
       delay=1
       timeout=300
@@ -29,7 +29,7 @@
 # virsh suspend DEMO-Satellite
 # virt-clone --connect qemu:///system --original DEMO-Satellite --name GOLD-Satellite --file /home/rnelson/Images/GOLD-Satellite.qcow2
 # virsh resume DEMO-Satellite
-# virt-sysprep -d GOLD-Satellite --hostname satellite.demo.com --root-password password:redhat
+# virt-sysprep -d GOLD-Satellite --hostname satellite.rnelson-demo.com --root-password password:redhat
 # mv /home/rnelson/Images/GOLD-Satellite.qcow2 /home/rnelson/Images/original/
 # cp /home/rnelson/Images/original/GOLD-Satellite.qcow2 /home/rnelson/Images/DEMO-Satellite.qcow2
 # virt-install --name DEMO-Satellite --ram 12228 --vcpus 4 --network bridge=virbr3 --disk path=/home/rnelson/Images/DEMO-Satellite.qcow2 --import --noautoconsole

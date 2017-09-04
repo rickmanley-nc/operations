@@ -14,6 +14,10 @@
     satellite_is_installed: "{{ False if satellite_is_installed.failed | default(False) or satellite_is_installed.status != 200 else True }}"
   tags: satellite
 
+- name: Set hostname
+  command: hostnamectl set-hostname {{ satellite_hostname }}
+  tags: satellite
+
 - name: Start and Enable firewalld
   systemd: name=firewalld state=started enabled=yes
   when: not satellite_is_installed
