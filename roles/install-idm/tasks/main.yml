@@ -20,7 +20,7 @@
   tags: idm
 
 - name: Register to RHN and attach general Server SKU through Activation Key (change activation key, CP currently not populating subscriptions)
-  command: subscription-manager register
+  command: subscription-manager register --username={{ rhn_username }} --password={{ rhn_password }}
 #  redhat_subscription:
 #    state: present
 #    activationkey: "{{ satellite_activation_key }}"
