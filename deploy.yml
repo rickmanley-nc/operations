@@ -4,3 +4,4 @@
   roles:
     - satellite-deploy-vm
     - tower-deploy-vm
+    - deploy-idm

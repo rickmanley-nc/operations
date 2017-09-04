@@ -4,5 +4,6 @@
   roles:
     - satellite-install
     - tower-install
+    - install-idm
 #    - laptop-configure
 # change roles to "install-*" for easier reading

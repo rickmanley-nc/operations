@@ -42,5 +42,3 @@
     - ipa-server
     - ipa-server-dns
   tags: idm
-
--name: 
