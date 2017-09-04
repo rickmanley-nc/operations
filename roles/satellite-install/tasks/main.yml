@@ -216,21 +216,21 @@
   command: hammer content-view publish --organization "{{satellite_organization}}" --name RHEL7_Base --description 'Initial Publishing'
   tags: satellite
 
-- name: Promote Initial RHEL 7 Base Content View to All Environments
-  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view RHEL7_Base --to-lifecycle-environment '{{ item }}'
-  with_items:
-    - Development
-    - Acceptance
-    - Production
-  tags: satellite
+#- name: Promote Initial RHEL 7 Base Content View to All Environments
+#  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view RHEL7_Base --to-lifecycle-environment '{{ item }}'
+#  with_items:
+#    - Development
+#    - Acceptance
+#    - Production
+#  tags: satellite
 
 - name: Publish Initial EPEL Content View
   command: hammer content-view publish --organization "{{satellite_organization}}" --name EPEL --description 'Initial Publishing'
   tags: satellite
 
-- name: Promote Initial EPEL Content View to only Development Environment
-  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view EPEL --to-lifecycle-environment Development
-  tags: satellite
+#- name: Promote Initial EPEL Content View to only Development Environment
+#  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view EPEL --to-lifecycle-environment Development
+#  tags: satellite
 
 - name: Create Development-RHEL Composite Content View (RHEL7_Base + EPEL)
   command: hammer content-view create --composite --organization "{{satellite_organization}}" --name 'Development-RHEL' --label composite_D_rhel7_epel --description 'Combination of RHEL7_Base and EPEL for Development'
