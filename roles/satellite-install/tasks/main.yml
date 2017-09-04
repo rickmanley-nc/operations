@@ -90,6 +90,12 @@
   when: not satellite_is_installed
   tags: satellite
 
+# Added this comment back for when IdM is added as DNS. Will need to integrate DNS?
+#- name: Run satellite-installer
+#  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}" --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone "{{satellite_domain}}" --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.150 192.168.126.200" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
+#  when: not satellite_is_installed
+#  tags: satellite
+
 #This will change to IdM once we configure that role
 #- name: Update resolv.conf to have Satellite point to itself for DNS resolution
 #  lineinfile:

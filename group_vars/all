@@ -7,19 +7,6 @@ satellite_location: RDU
 satellite_domain: demo.com
 satellite_hostname: satellite.demo.com
 
-###testing###
-#satellite_hammer_repos:
-#  - { product: "{{ PROD }}", release: "{{ RELEASE }}", basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.kickstart.0}}", test: "{{SAT_MAP.kickstart.1}}" }
-#  - { product: "{{ PROD }}", release: ""             , basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.extras.0}}"   , test: "{{SAT_MAP.extras.1}}" }
-#  - { product: "{{ PROD }}", release: ""             , basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.sattools.0}}" , test: "{{SAT_MAP.sattools.1}}" }
-#  - { product: "{{ PROD }}", release: "{{ RELEASE }}", basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.rhcommon.0}}" , test: "{{SAT_MAP.rhcommon.1}}" }
-#  - { product: "{{ PROD }}", release: "{{ RELEASE }}", basearch: "{{ BASEARCH }}", name: "{{SAT_MAP.base.0}}"     , test: "{{SAT_MAP.base.1}}" }
-
-#satellite_hammer_environments:
-#  - { name: "Development", description: "Development", prior: "Library" }
-#  - { name: "Acceptance", description: "Acceptance", prior: "Development" }
-#  - { name: "Production", description: "Production", prior: "Acceptance" }
-
 satellite_repos:
   - rhel-7-server-rpms
   - rhel-server-rhscl-7-rpms
@@ -39,7 +26,11 @@ satellite_ports:
   - '67/udp'   # DHCP
   - '68/udp'   # DHCP
   - '69/udp'   # TFTP
-
+  - '389/tcp'  # LDAP
+  - '636/tcp'  # LDAPS
+  - '88/tcp'   # Kerberos
+  - '464/tcp'  # Kerberos
+  - '123/udp'  # NTP
 
 
 #Laptop Configure section#
@@ -51,3 +42,26 @@ laptop_ports:
 
 
 #Tower Configure section
+
+
+
+#IdM Configure Section
+idm_ports:
+  - '80/tcp'   # HTTP
+  - '443/tcp'  # HTTPS
+  - '389/tcp'  # LDAP
+  - '636/tcp'  # LDAPS
+  - '88/tcp'   # Kerberos
+  - '464/tcp'  # Kerberos
+  - '123/udp'  # NTP
+  - '5646/tcp' # qpid/Katello
+  - '5647/tcp' # qpid/Katello
+  - '5671/tcp' # amqp
+  - '5674/tcp' # amqp
+  - '8140/tcp' # Puppet
+  - '9090/tcp' # Foreman Smart Proxy / Capsule
+  - '53/tcp'   # DNS
+  - '53/udp'   # DNS
+  - '67/udp'   # DHCP
+  - '68/udp'   # DHCP
+  - '69/udp'   # TFTP
