@@ -10,7 +10,7 @@
 - name: Wait for SSH to come up on Satellite
   local_action:
     module: wait_for
-      host=satellite.rnelson-demo.com
+      host={{ satellite_hostname }}
       port=22
       delay=1
       timeout=300
