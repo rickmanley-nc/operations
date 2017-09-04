@@ -1,0 +1,38 @@
+---
+# Red Hat vulnerability scan.
+# sudo wget -c4 https://www.redhat.com/security/data/metrics/ds/com.redhat.rhsa-RHEL7.ds.xml && oscap xccdf eval --results results.xml --report report.html com.redhat.rhsa-RHEL7.ds.xml
+# When the playbook finishes, you may be able to run 'firefox /opt/report.html' on the local system to review results.
+
+- hosts: all
+  tasks:
+
+  - name: Install openscap
+    yum: name=openscap-scanner state=latest
+    when: ansible_distribution == "RedHat"
+
+  - name: Removing /opt/security-scan/
+    file: path=/opt/security-scan state=absent
+    ignore_errors: yes
+
+  - name: Creating /opt/security-scan/
+    file: 
+      path: "/opt/security-scan"
+      state: "directory"
+      owner: root
+      group: root
+      mode: 0700
+
+  - name: Download Red Hat Security Advisory Datastream file | com.redhat.rhsa-RHEL7.ds.xml
+    get_url:
+      url: "https://www.redhat.com/security/data/metrics/ds/com.redhat.rhsa-RHEL7.ds.xml"
+      dest: "/opt/security-scan/com.redhat.rhsa-RHEL7.ds.xml"
+      mode: "0600"
+    when: ansible_distribution == "RedHat"
+
+  - name: Running Red Hat Security Advisory scan | firefox /opt/security-scan/report.html to review
+    command: "oscap xccdf eval --results /opt/security-scan/results.xml --report /opt/security-scan/report.html /opt/security-scan/com.redhat.rhsa-RHEL7.ds.xml"
+    ignore_errors: yes
+    when: ansible_distribution == "RedHat"
+
+#need to update when to only apply to 7
+#need to ensure that /opt/security-scan directory is an NFS share
