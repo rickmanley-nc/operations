@@ -122,7 +122,7 @@
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)'
   tags: satellite
 
-- name: Enable RHEL 7.4 Kickstart (this is so we show Insights after we disable the 'yum update' in the provisioning kickstart config)
+- name: Enable RHEL 7.4 Kickstart
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.4' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
   tags: satellite
 
@@ -134,7 +134,7 @@
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)'
   tags: satellite
 
-- name: Download EPEL GPG Key from upstream
+- name: Download EPEL GPG Key for version 7 from upstream
   get_url:
     url: https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7
     dest: /root/RPM-GPG-KEY-EPEL-7
@@ -211,33 +211,29 @@
   command: hammer content-view add-repository --organization "{{satellite_organization}}" --name 'EPEL' --product 'Extra Packages for Enterprise Linux' --repository 'EPEL 7 - x86_64'
   tags: satellite
 
-- name:
-#add content view filter to EPEL
-#all packages without errata, include, rpm
-#all errata until Sept 1, 2017, include, errata - date and type
-#exclude all puppet related Packages, exclude, rpm
-#exclude all qpid related packages, exclude, rpm
+#- name:
+# hammer content-view filter create --organization RedHat --content-view EPEL --name "All packages without errata" --inclusion true --type rpm
+# api call to change 'original_packages' to true
 
+#i don't think you can set the 'include all packages without errata box' button through hammer. We can do it via an API call though and set the 'original_packages' value to 'true'
+#https://satellite.demo.com/katello/api/v2/content_view_filters/4
+#https://satellite.demo.com/katello/api/v2/content_views/3/filters/4
+
+
+# hammer content-view filter create --organization RedHat --content-view EPEL --name "All errata until Aug 1, 2017" --inclusion true --type erratum
+# hammer content-view filter rule create --organization RedHat --content-view EPEL --content-view-filter "All errata until Aug 1, 2017" --types enhancement,bugfix,security --end-date 2017-08-01
+# hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude Puppet packages" --inclusion false --type rpm
+# hammer content-view filter rule create --name "puppet*" --organization RedHat --content-view EPEL --content-view-filter "Exclude Puppet packages"
+# hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude qpid packages" --inclusion false --type rpm
+# hammer content-view filter rule create --name "*qpid*" --organization RedHat --content-view EPEL --content-view-filter "Exclude qpid packages"
 
 - name: Publish Initial RHEL 7 Base Content View
   command: hammer content-view publish --organization "{{satellite_organization}}" --name RHEL7_Base --description 'Initial Publishing'
   tags: satellite
 
-#- name: Promote Initial RHEL 7 Base Content View to All Environments
-#  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view RHEL7_Base --to-lifecycle-environment '{{ item }}'
-#  with_items:
-#    - Development
-#    - Acceptance
-#    - Production
-#  tags: satellite
-
 - name: Publish Initial EPEL Content View
   command: hammer content-view publish --organization "{{satellite_organization}}" --name EPEL --description 'Initial Publishing'
   tags: satellite
-
-#- name: Promote Initial EPEL Content View to only Development Environment
-#  command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view EPEL --to-lifecycle-environment Development
-#  tags: satellite
 
 - name: Create Development-RHEL Composite Content View (RHEL7_Base + EPEL)
   command: hammer content-view create --composite --organization "{{satellite_organization}}" --name 'Development-RHEL' --label composite_D_rhel7_epel --description 'Combination of RHEL7_Base and EPEL for Development'
