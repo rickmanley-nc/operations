@@ -10,7 +10,7 @@
 - name: Wait for SSH to come up on IdM
   local_action:
     module: wait_for
-      host=idm.rnelson-demo.com
+      host={{ idm_hostname }}
       port=22
       delay=1
       timeout=300

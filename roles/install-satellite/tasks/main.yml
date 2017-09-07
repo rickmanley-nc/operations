@@ -35,22 +35,11 @@
 
 - name: Download /etc/hosts file from Laptop
   get_url:
-    url: http://192.168.126.1/hosts
+    url: http://{{ laptop_ip }}/hosts
     dest: /etc/hosts
     mode: 0644
   when: not satellite_is_installed
   tags: satellite
-
-#- name: Register to RHN and attach Satellite SKU, (change to pool_ids when Ansible 2.4 is released)
-#  redhat_subscription:
-#    state: present
-#    username: "{{ rhn_username }}"
-#    password: "{{ rhn_password }}"
-# need ansible2.4 for pool_ids to work
-# need to manually delete the system in customer portal... find out a way to do the --force option? Currently --force not supported in redhat_subscription
-#    pool: '^(Red Hat Satellite Employee Subscription)$'
-#  when: not satellite_is_installed
-#  tags: satellite
 
 - name: Register to RHN and attach Satellite SKU through Activation Key
   redhat_subscription:
@@ -71,7 +60,7 @@
   when: not satellite_is_installed
   tags: satellite
 
-- name: Install Satellite RPMs
+- name: Install 'satellite' and 'ipa-client' RPMs
   yum:
     name: "{{ item }}"
     state: latest
@@ -83,7 +72,7 @@
 
 - name: Download foreman.yml from Laptop for Hammer configs
   get_url:
-    url: http://192.168.126.1/foreman.yml
+    url: http://{{ laptop_ip }}/foreman.yml
     dest: /etc/hammer/cli.modules.d/
     mode: 0755
   when: not satellite_is_installed
@@ -111,14 +100,14 @@
 #  when: not satellite_is_installed
 #  tags: satellite
 
-- name: Download manifest from Laptop
+- name: Download Manifest from Laptop
   get_url:
-    url: http://192.168.126.1/Satellite_61_Latest.zip
-    dest: /root/Satellite_61_Latest.zip
+    url: http://{{ laptop_ip }}/{{ satellite_manifest_filename }}
+    dest: {{ satellite_local_path_to_manifest }}
   tags: satellite
 
 - name: Upload Manifest
-  command: hammer subscription upload --organization "{{satellite_organization}}" --file /root/Satellite_61_Latest.zip
+  command: hammer subscription upload --organization "{{satellite_organization}}" --file {{ satellite_local_path_to_manifest }}
   tags: satellite
 
 - name: Enable "Lazy Sync" on-demand policy for all Repositories
@@ -167,7 +156,7 @@
   raw: hammer sync-plan create --name 'Daily Sync' --description 'Daily Synchronization Plan' --organization "{{satellite_organization}}" --interval daily --sync-date $(date +"%Y-%m-%d")" 00:00:00" --enabled yes
   tags: satellite
 
-- name: Add RHEL Product to Sync Plan
+- name: Add RHEL Product and EPEL Products to Sync Plan
   command: hammer product set-sync-plan --name "{{ item }}" --organization "{{satellite_organization}}" --sync-plan 'Daily Sync'
   with_items:
     - "Red Hat Enterprise Linux Server"
@@ -222,6 +211,14 @@
   command: hammer content-view add-repository --organization "{{satellite_organization}}" --name 'EPEL' --product 'Extra Packages for Enterprise Linux' --repository 'EPEL 7 - x86_64'
   tags: satellite
 
+- name:
+#add content view filter to EPEL
+#all packages without errata, include, rpm
+#all errata until Sept 1, 2017, include, errata - date and type
+#exclude all puppet related Packages, exclude, rpm
+#exclude all qpid related packages, exclude, rpm
+
+
 - name: Publish Initial RHEL 7 Base Content View
   command: hammer content-view publish --organization "{{satellite_organization}}" --name RHEL7_Base --description 'Initial Publishing'
   tags: satellite
@@ -258,18 +255,21 @@
   command: hammer content-view version promote --organization "{{satellite_organization}}" --content-view Development-RHEL --to-lifecycle-environment Development
   tags: satellite
 
-##add Content View Filters to show a monthly patching policy... which really means... create a monthly patching policy from end-to-end
-#https://theforeman.org/plugins/katello/nightly/user_guide/content_views/index.html , check for hammer example on filter creation
-
 - name: Create RHEL Activation Key for Development
   command: hammer activation-key create --organization "{{satellite_organization}}" --description 'Activation Key for Development Environment for RHEL 7 servers' --content-view 'Development-RHEL' --unlimited-hosts --name ak-Reg_To_Development --lifecycle-environment 'Development'
   tags: satellite
 
-##Need##
-# add subscriptions to activation keys and enable the correct channels for each environment... look at using --output to be able to parse by field.
-#$ hammer subscription list --organization “RedHat”
-#$ hammer activation-key add-subscription --name _akReg_To_Dev_EL7_ --subscription-id 8 --organization "$ORG"
-#$ hammer activation-key content-override --name _akReg_To_Dev_EL7_ --organization "$ORG" --content-label rhel-7-server-satellite-tools-6.2-rpms --value 1
+- name: Attach Cloud Suite subscription to Activation Key for Development
+  command: hammer activation-key add-subscription --name ak-Reg_To_Development --subscription-id 23 --organization "{{satellite_organization}}"
+  tags: satellite
+
+- name: Attach EPEL subscription to Activation Key for Development
+  command: hammer activation-key add-subscription --name ak-Reg_To_Development --subscription-id 18 --organization "{{satellite_organization}}"
+  tags: satellite
+
+- name: Enable Sat Tools channel in Activation Key
+  command: hammer activation-key content-override --name ak-Reg_To_Development --organization "$ORG" --content-label rhel-7-server-satellite-tools-6.2-rpms --value 1
+  tags: satellite
 
 - name: Update Domain Settings
   command: hammer domain update --name "{{satellite_domain}}" --organizations "{{satellite_organization}}" --locations "{{satellite_location}}"

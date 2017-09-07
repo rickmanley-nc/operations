@@ -29,6 +29,8 @@
 #=====#
 #Define it, start it, and autostart it in libvirt
 
+
+#yum install libvirt-client
 #virsh net-define /etc/libvirt/qemu/networks/sat-isolated.xml
 #virsh net-start sat-isolated
 #virsh net-autostart sat-isolated

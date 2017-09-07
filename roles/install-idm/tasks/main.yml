@@ -23,16 +23,11 @@
     mode: 0644
   tags: idm
 
-- name: Register to RHN and attach general Server SKU through Activation Key (change activation key, CP currently not populating subscriptions)
-  command: subscription-manager register --username={{ rhn_username }} --password={{ rhn_password }}
-#  redhat_subscription:
-#    state: present
-#    activationkey: "{{ satellite_activation_key }}"
-#    org_id: "{{ rhn_org_id }}"
-  tags: idm
-
-- name: Attach Employee SKU (remove once CP allows creation of activation key)
-  command: subscription-manager attach --pool=8a85f9833e1404a9013e3cddf99305e6
+- name: Register to RHN and attach general Server SKU through Activation Key
+  redhat_subscription:
+    state: present
+    activationkey: "{{ server_activation_key }}"
+    org_id: "{{ rhn_org_id }}"
   tags: idm
 
 - name: Disable All Repositories
@@ -51,3 +46,13 @@
     - ipa-server
     - ipa-server-dns
   tags: idm
+
+- name: Configure IdM
+  command: ipa-server-install -U --hostname={{ idm_hostname }} --domain={{ idm_domain }} --realm={{ idm_realm }} --ds-password={{ idm_dir_admin_password}} --admin-password={{ idm_admin_password }}
+
+
+forwarder?
+--setup-dns ?
+--mkhomedir ?
+--no-ntp ?
+creates=/etc/ipa/default.conf ?

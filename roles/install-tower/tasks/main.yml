@@ -29,11 +29,15 @@
     state: present
   tags: tower
 
-- name: Install Ansible RPM
+- name: Install 'ansible' and 'ipa-client' RPMs
   yum:
-    name: ansible
+    name: {{ item }}
     state: latest
+  with_items:
+    - ansible
+    - ipa-client
   tags: tower
+
 
 - name: Download and Unarchive Ansible Tower Bundle Installer
   unarchive:
