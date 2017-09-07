@@ -31,7 +31,7 @@
 
 - name: Install 'ansible' and 'ipa-client' RPMs
   yum:
-    name: {{ item }}
+    name: "{{ item }}"
     state: latest
   with_items:
     - ansible
