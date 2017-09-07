@@ -1,12 +1,29 @@
 ---
-#add in ssh, http, and https for firewalld
-#[root@rnelsonlaptop ~]# firewall-cmd --zone=FedoraWorkstation --permanent --add-service=http
-#[root@rnelsonlaptop ~]# firewall-cmd --zone=FedoraWorkstation --permanent --add-service=https
-#[root@rnelsonlaptop ~]# firewall-cmd --zone=FedoraWorkstation --permanent --add-service=ssh
-#set up httpd server with manifest and foreman.yml
-# have "include:" lines for both?
-# Use http://account-manager-stage.app.eng.rdu2.redhat.com/#create for creating custom manifest, must be on VPN
-# follow https://mojo.redhat.com/docs/DOC-1102802
+- name: Start and Enable firewalld
+  systemd: name=firewalld state=started enabled=yes
+  tags: laptop
+
+- name: Configure firewalld
+  firewalld:
+    port: "{{ item }}"
+    permanent: true
+    immediate: yes
+    state: enabled
+    zone: FedoraWorkstation
+  with_items:
+    - '80/tcp'   # HTTP
+    - '443/tcp'  # HTTPS
+    - '22/tcp'   # SSH
+    - '22/udp'   # SSH
+  tags: laptop
+
+- name: Install httpd
+  yum:
+    name: httpd
+    state: latest
+  tags: laptop
+
+#- name: Copy over files to be hosted on httpd
 # restorecon -v /var/www/html/*
 
 #=====#
