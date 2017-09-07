@@ -109,7 +109,7 @@
   tags: satellite
 
 - name: Upload Manifest
-  command: hammer subscription upload --organization "{{satellite_organization}}" --file {{ satellite_local_path_to_manifest }}
+  command: hammer subscription upload --organization "{{satellite_organization}}" --file /root/manifest.zip
   tags: satellite
 
 - name: Enable "Lazy Sync" on-demand policy for all Repositories
