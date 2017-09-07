@@ -103,7 +103,7 @@
 - name: Download Manifest from Laptop
   get_url:
     url: http://{{ laptop_ip }}/{{ satellite_manifest_filename }}
-    dest: {{ satellite_local_path_to_manifest }}
+    dest: "{{ satellite_local_path_to_manifest }}"
   tags: satellite
 
 - name: Upload Manifest
