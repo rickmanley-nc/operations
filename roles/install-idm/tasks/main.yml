@@ -49,10 +49,10 @@
 
 - name: Configure IdM
   command: ipa-server-install -U --hostname={{ idm_hostname }} --domain={{ idm_domain }} --realm={{ idm_realm }} --ds-password={{ idm_dir_admin_password}} --admin-password={{ idm_admin_password }}
+  tags: idm
 
-
-forwarder?
---setup-dns ?
---mkhomedir ?
---no-ntp ?
-creates=/etc/ipa/default.conf ?
+#forwarder?
+#--setup-dns ?
+#--mkhomedir ?
+#--no-ntp ?
+#creates=/etc/ipa/default.conf ?
