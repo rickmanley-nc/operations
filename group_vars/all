@@ -7,7 +7,7 @@ satellite_location: RDU
 satellite_domain: rnelson-demo.com
 satellite_hostname: satellite.rnelson-demo.com
 satellite_manifest_filename: manifest-rnelson-sales
-satellite_local_path_to_manifest: /root/manifest-rnelson-sales.zip
+satellite_local_path_to_manifest: "/root/manifest-rnelson-sales.zip"
 
 
 satellite_repos:
