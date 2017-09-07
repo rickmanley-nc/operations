@@ -7,6 +7,7 @@
 # have "include:" lines for both?
 # Use http://account-manager-stage.app.eng.rdu2.redhat.com/#create for creating custom manifest, must be on VPN
 # follow https://mojo.redhat.com/docs/DOC-1102802
+# restorecon -v /var/www/html/*
 
 #=====#
 #setup and configure libvirt, deploy /etc/libvirt/qemu/networks/sat-isolated.xml or create vars vile to make it pluggable

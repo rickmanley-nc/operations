@@ -4,6 +4,8 @@
     url: http://192.168.126.1/hosts
     dest: /etc/hosts
     mode: 0644
+    backup: yes
+    force: yes
   tags: tower
 
 - name: Register to RHN and attach RHEL Server SKU, (change to pool_ids when Ansible 2.4 is released)

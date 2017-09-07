@@ -38,6 +38,8 @@
     url: http://{{ laptop_ip }}/hosts
     dest: /etc/hosts
     mode: 0644
+    backup: yes
+    force: yes
   when: not satellite_is_installed
   tags: satellite
 
