@@ -90,17 +90,6 @@
   when: not satellite_is_installed
   tags: satellite
 
-#This will change to IdM "x.x.x.4" once we configure that role
-- name: Update resolv.conf to have Satellite point to itself for DNS resolution
-  lineinfile:
-    path: /etc/resolv.conf
-    regexp: 'nameserver'
-    line: 'nameserver 192.168.126.2'
-    state: present
-    backrefs: yes
-  when: not satellite_is_installed
-  tags: satellite
-
 - name: Download Manifest from Laptop
   get_url:
     url: http://{{ laptop_ip }}/{{ satellite_manifest_filename }}
