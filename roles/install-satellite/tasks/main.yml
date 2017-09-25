@@ -79,14 +79,28 @@
     mode: 0755
   tags: satellite
 
-#- name: Run satellite-installer
+#- name: Run satellite-installer (without DHCP, DNS, TFTP)
 #  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}"
 #  when: not satellite_is_installed
 #  tags: satellite
 
-# Added this comment back for when IdM is added as DNS. Will need to integrate DNS?
-- name: Run satellite-installer
-  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}" --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.150 192.168.126.200" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername "{{satellite_hostname}}" --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
+#- name: Run satellite-installer (with DHCP and TFTP, without DNS) Unable to PXE without DNS server to verify satellite.rnelson-demo.com. Possibly IdM's DNS, but did that fail? to resolve dl.fedoraproject.org while successfully resolving fedoraproject.org during the EPEL GPG key download. Need to test hosting GPG key instead of attempting to download.
+#  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}" --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.150 192.168.126.200" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername "{{satellite_hostname}}" --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
+#  when: not satellite_is_installed
+#  tags: satellite
+
+- name: Run satellite-installer (with DHCP, TFTP, DNS)
+  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}" --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone "{{satellite_domain}}" --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.150 192.168.126.200" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
+  when: not satellite_is_installed
+  tags: satellite
+
+- name: Update resolv.conf to have Satellite point to itself for DNS resolution
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'nameserver'
+    line: 'nameserver 192.168.126.2'
+    state: present
+    backrefs: yes
   when: not satellite_is_installed
   tags: satellite
 
@@ -237,6 +251,17 @@
 #  command: hammer content-view filter rule create --name "*qpid*" --organization "{{satellite_organization}}" --content-view EPEL --content-view-filter "Exclude qpid packages"
 #  tags: satellite
 
+#until I figure out the API call, here's the manual process to follow:
+#hammer content-view filter create --organization RedHat --content-view EPEL --name "All packages without errata" --inclusion true --type rpm
+#GO INTO WEBUI and check the box for "Include all packages without errata" box on this filter. Hammer can't do this, but there is an API call to change "original_packages" to true... I just don't know how to do API scripts yet.
+#hammer content-view filter create --organization RedHat --content-view EPEL --name "All errata until Aug 1, 2017" --inclusion true --type erratum
+#hammer content-view filter rule create --organization RedHat --content-view EPEL --content-view-filter "All errata until Aug 1, 2017" --types enhancement,bugfix,security --end-date 2017-08-01
+#hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude Puppet packages" --inclusion false --type rpm
+#hammer content-view filter rule create --name "puppet*" --organization RedHat --content-view EPEL --content-view-filter "Exclude Puppet packages"
+#hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude qpid packages" --inclusion false --type rpm
+#hammer content-view filter rule create --name "*qpid*" --organization RedHat --content-view EPEL --content-view-filter "Exclude qpid packages"
+#hammer content-view publish --organization RedHat --name EPEL --description 'Added Filters for Aug 1, 2017'
+
 - name: Publish Initial RHEL 7 Base Content View
   command: hammer content-view publish --organization "{{satellite_organization}}" --name RHEL7_Base --description 'Initial Publishing'
   tags: satellite
@@ -283,8 +308,10 @@
   tags: satellite
 
 - name: Create VLAN_126 subnet
-  command: hammer subnet create --name vlan_126 --dhcp-id 1 --dns-id 1 --tftp-id 1 --organizations "{{satellite_organization}}" --domains "{{satellite_domain}}" --locations "{{satellite_location}}" --network 192.168.126.0 --mask 255.255.255.0 --gateway 192.168.126.1 --from 192.168.126.150 --to 192.168.126.200
+  command: hammer subnet create --name vlan_126 --dhcp-id 1 --tftp-id 1 --organizations "{{satellite_organization}}" --domains "{{satellite_domain}}" --locations "{{satellite_location}}" --network 192.168.126.0 --mask 255.255.255.0 --gateway 192.168.126.1 --from 192.168.126.150 --to 192.168.126.200
   tags: satellite
+
+#manually add remote execution capsule. Not listed in hammer, need to find API
 
 - name: Create Host Group for Development.
   command: hammer hostgroup create --architecture x86_64 --content-source-id 1 --content-view Development-RHEL --domain "{{satellite_domain}}" --lifecycle-environment Development --name RHEL7_Development_Servers --organization "{{satellite_organization}}" --puppet-ca-proxy "{{satellite_hostname}}" --puppet-proxy "{{satellite_hostname}}" --subnet vlan_126 --partition-table 'Kickstart default' --operatingsystem 'RedHat 7.4' --medium RedHat/Library/Red_Hat_Server/Red_Hat_Enterprise_Linux_7_Server_Kickstart_x86_64_7_4
