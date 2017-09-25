@@ -72,41 +72,34 @@
   when: not satellite_is_installed
   tags: satellite
 
-#- name: Download foreman.yml from Laptop for Hammer configs
-#  get_url:
-#    url: http://{{ laptop_ip }}/foreman.yml
-#    dest: /etc/hammer/cli.modules.d/
-#    mode: 0755
-#  when: not satellite_is_installed
-#  tags: satellite
-
 - name: Foreman Template
   template:
     src: "../templates/foreman.yml.j2"
     dest: /etc/hammer/cli.modules.d/foreman.yml
+    mode: 0755
   tags: satellite
 
+#- name: Run satellite-installer
+#  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}"
+#  when: not satellite_is_installed
+#  tags: satellite
+
+# Added this comment back for when IdM is added as DNS. Will need to integrate DNS?
 - name: Run satellite-installer
-  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}"
+  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}" --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone "{{satellite_domain}}" --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.150 192.168.126.200" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername "{{satellite_hostname}}" --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
   when: not satellite_is_installed
   tags: satellite
 
-# Added this comment back for when IdM is added as DNS. Will need to integrate DNS?
-#- name: Run satellite-installer
-#  shell: satellite-installer -v --scenario satellite --foreman-initial-organization "{{satellite_organization}}" --foreman-initial-location "{{satellite_location}}" --foreman-admin-password "{{satellite_admin_password}}" --foreman-proxy-dns true --foreman-proxy-dns-interface ens3 --foreman-proxy-dns-zone "{{satellite_domain}}" --foreman-proxy-dns-forwarders 192.168.126.1 --foreman-proxy-dns-reverse 126.168.192.in-addr.arpa --foreman-proxy-dhcp true --foreman-proxy-dhcp-interface ens3 --foreman-proxy-dhcp-range "192.168.126.150 192.168.126.200" --foreman-proxy-dhcp-gateway 192.168.126.1 --foreman-proxy-dhcp-nameservers 192.168.126.2 --foreman-proxy-tftp true --foreman-proxy-tftp-servername $(hostname) --capsule-puppet true --foreman-proxy-puppetca true --enable-foreman-plugin-openscap
-#  when: not satellite_is_installed
-#  tags: satellite
-
 #This will change to IdM once we configure that role
-#- name: Update resolv.conf to have Satellite point to itself for DNS resolution
-#  lineinfile:
-#    path: /etc/resolv.conf
-#    regexp: 'nameserver'
-#    line: 'nameserver 192.168.126.2'
-#    state: present
-#    backrefs: yes
-#  when: not satellite_is_installed
-#  tags: satellite
+- name: Update resolv.conf to have Satellite point to itself for DNS resolution
+  lineinfile:
+    path: /etc/resolv.conf
+    regexp: 'nameserver'
+    line: 'nameserver 192.168.126.2'
+    state: present
+    backrefs: yes
+  when: not satellite_is_installed
+  tags: satellite
 
 - name: Download Manifest from Laptop
   get_url:
@@ -219,21 +212,41 @@
   command: hammer content-view add-repository --organization "{{satellite_organization}}" --name 'EPEL' --product 'Extra Packages for Enterprise Linux' --repository 'EPEL 7 - x86_64'
   tags: satellite
 
-#- name:
-# hammer content-view filter create --organization RedHat --content-view EPEL --name "All packages without errata" --inclusion true --type rpm
-# api call to change 'original_packages' to true
+#- name: Create Content View Filter (include all packages without errata)
+#  command: hammer content-view filter create --organization "{{satellite_organization}}" --content-view EPEL --name "All packages without errata" --inclusion true --type rpm
+#  tags: satellite
 
-#i don't think you can set the 'include all packages without errata box' button through hammer. We can do it via an API call though and set the 'original_packages' value to 'true'
+#- name: Call API to check the "Include all packages without errata" box on the previously created Content View Filter
+#GO INTO WEBUI and check the box for "Include all packages without errata" box on this filter. Hammer can't do this, but there is an API call to change "original_packages" to true... I just don't know how to do API scripts yet.
 #https://satellite.demo.com/katello/api/v2/content_view_filters/4
 #https://satellite.demo.com/katello/api/v2/content_views/3/filters/4
+#curl -X GET -s -k -u admin:redhat https://satellite.rnelson-demo.com/katello/api/v2/content_view_filters/1
+# the following doesn't work:
+# curl -H "Accept:application/json,version=2" -H "Content-Type:application/json" -X POST -u admin:redhat -k -d "{\"original_packages\" : false}" https://satellite.rnelson-demo.com/katello/api/v2/content_views/3/filters/1
 
+#- name: Create Content View Filter (All errata until Aug 1, 2017)
+#  command: hammer content-view filter create --organization "{{satellite_organization}}" --content-view EPEL --name "All errata until Aug 1, 2017" --inclusion true --type erratum
+#  tags: satellite
 
-# hammer content-view filter create --organization RedHat --content-view EPEL --name "All errata until Aug 1, 2017" --inclusion true --type erratum
-# hammer content-view filter rule create --organization RedHat --content-view EPEL --content-view-filter "All errata until Aug 1, 2017" --types enhancement,bugfix,security --end-date 2017-08-01
-# hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude Puppet packages" --inclusion false --type rpm
-# hammer content-view filter rule create --name "puppet*" --organization RedHat --content-view EPEL --content-view-filter "Exclude Puppet packages"
-# hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude qpid packages" --inclusion false --type rpm
-# hammer content-view filter rule create --name "*qpid*" --organization RedHat --content-view EPEL --content-view-filter "Exclude qpid packages"
+#- name: Create Rule for Filter (All errata until Aug 1, 2017)
+#  command: hammer content-view filter rule create --organization "{{satellite_organization}}" --content-view EPEL --content-view-filter "All errata until Aug 1, 2017" --types enhancement,bugfix,security --end-date 2017-08-01
+#  tags: satellite
+
+#- name: Create Content View Filter (Exclude Puppet packages)
+#  command: hammer content-view filter create --organization "{{satellite_organization}}" --content-view EPEL --name "Exclude Puppet packages" --inclusion false --type rpm
+#  tags: satellite
+
+#- name: Create Rule for Filter (Exclude Puppet packages)
+#  command: hammer content-view filter rule create --name "puppet*" --organization "{{satellite_organization}}" --content-view EPEL --content-view-filter "Exclude Puppet packages"
+#  tags: satellite
+
+#- name: Create Content View Filter (Exclude qpid packages)
+#  command: hammer content-view filter create --organization "{{satellite_organization}}" --content-view EPEL --name "Exclude qpid packages" --inclusion false --type rpm
+#  tags: satellite
+
+#- name: Create Rule for Filter (Exclude qpid packages)
+#  command: hammer content-view filter rule create --name "*qpid*" --organization "{{satellite_organization}}" --content-view EPEL --content-view-filter "Exclude qpid packages"
+#  tags: satellite
 
 - name: Publish Initial RHEL 7 Base Content View
   command: hammer content-view publish --organization "{{satellite_organization}}" --name RHEL7_Base --description 'Initial Publishing'
@@ -264,18 +277,30 @@
   tags: satellite
 
 - name: Attach subscriptions to Activation Key for Development
-  command: hammer activation-key add-subscription --name ak-Reg_To_Development --subscription-id {{ item }} --organization "{{satellite_organization}}"
+  command: hammer activation-key add-subscription --name ak-Reg_To_Development-guest --subscription-id {{ item }} --organization "{{satellite_organization}}"
   with_items: "{{ satellite_subscription_ids }}"
   tags: satellite
 
 - name: Enable Sat Tools channel in Activation Key
-  command: hammer activation-key content-override --name ak-Reg_To_Development --organization "$ORG" --content-label rhel-7-server-satellite-tools-6.2-rpms --value 1
+  command: hammer activation-key content-override --name ak-Reg_To_Development-guest --organization "{{satellite_organization}}" --content-label rhel-7-server-satellite-tools-6.2-rpms --value 1
   tags: satellite
 
 - name: Update Domain Settings
   command: hammer domain update --name "{{satellite_domain}}" --organizations "{{satellite_organization}}" --locations "{{satellite_location}}"
   tags: satellite
 
-##Need##
-# add Fedora / CentOS product to show Foreman managing these.
-#set up ssh keys
+- name: Create Compute Resource (LibVirt)
+  command: hammer compute-resource create --description 'LibVirt Compute Resource' --locations "{{satellite_location}}" --name Libvirt_CR --organizations "{{satellite_organization}}" --url 'qemu+tcp://192.168.126.1/system/' --provider libvirt --set-console-password 0
+  tags: satellite
+
+- name: Create VLAN_126 subnet
+  command: hammer subnet create --name vlan_126 --dhcp-id 1 --dns-id 1 --tftp-id 1 --organizations "{{satellite_organization}}" --domains "{{satellite_domain}}" --locations "{{satellite_location}}" --network 192.168.126.0 --mask 255.255.255.0 --gateway 192.168.126.1 --from 192.168.126.150 --to 192.168.126.200
+  tags: satellite
+
+- name: Create Host Group for Development.
+  command: hammer hostgroup create --architecture x86_64 --content-source-id 1 --content-view Development-RHEL --domain "{{satellite_domain}}" --lifecycle-environment Development --name RHEL7_Development_Servers --organization "{{satellite_organization}}" --puppet-ca-proxy "{{satellite_hostname}}" --puppet-proxy "{{satellite_hostname}}" --subnet vlan_126 --partition-table 'Kickstart default' --operatingsystem 'RedHat 7.4' --medium RedHat/Library/Red_Hat_Server/Red_Hat_Enterprise_Linux_7_Server_Kickstart_x86_64_7_4
+  tags: satellite
+
+- name: Set Host Group "RHEL 7 Development Servers" activation keys to "ak-Reg_To_Development-guest"
+  command: hammer hostgroup set-parameter --hostgroup "RHEL7_Development_Servers" --name "kt_activation_keys" --value ak-Reg_To_Development-guest
+  tags: satellite
