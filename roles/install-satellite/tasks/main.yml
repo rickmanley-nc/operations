@@ -90,7 +90,7 @@
   when: not satellite_is_installed
   tags: satellite
 
-#This will change to IdM once we configure that role
+#This will change to IdM "x.x.x.4" once we configure that role
 - name: Update resolv.conf to have Satellite point to itself for DNS resolution
   lineinfile:
     path: /etc/resolv.conf
@@ -119,9 +119,9 @@
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server (RPMs)'
   tags: satellite
 
-- name: Enable RHEL 7 Server Extras
-  command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)'
-  tags: satellite
+#- name: Enable RHEL 7 Server Extras
+#  command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)'
+#  tags: satellite
 
 - name: Enable RHEL 7.4 Kickstart
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.4' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
@@ -131,9 +131,9 @@
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Satellite Tools 6.2 (for RHEL 7 Server) (RPMs)'
   tags: satellite
 
-- name: Enable RHEL 7 Server Optional
-  command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)'
-  tags: satellite
+#- name: Enable RHEL 7 Server Optional
+#  command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)'
+#  tags: satellite
 
 - name: Download EPEL GPG Key for version 7 from upstream
   get_url:

@@ -1,0 +1,22 @@
+---
+- hosts: all
+  tasks:
+    - name: Install the RSHM config from {{ satellite_hostname }}
+      command:  "/usr/bin/yum -y localinstall http://{{ satellite_hostname }}/pub/katello-ca-consumer-latest.noarch.rpm"
+      when: (ansible_distribution == "RedHat")
+
+    - name: Register to Satellite Server (Development)
+      redhat_subscription:
+        state: present
+        activationkey: ak-Reg_To_Development-guest
+        org_id: 1
+      register: 'reg_return'
+      when: (ansible_distribution == "RedHat")
+
+    - name: install ipa client
+      yum:
+        name: ipa-client
+        state: latest
+
+    - name: join ipa domain
+      command: ipa-client-install --server='{{ idm_hostname }}' --domain='{{ idm_domain }}' --principal='{{ idm_register_username }}' --password='{{ idm_register_password }}' --enable-dns-updates --unattended

@@ -54,8 +54,10 @@ laptop_ports:
 
 
 #IdM Configure Section
-idm_admin_password: redhat
-idm_dir_admin_password: redhat
+idm_register_username: admin
+idm_register_password: redhatrocks
+idm_admin_password: redhatrocks
+idm_dir_admin_password: redhatrocks
 idm_hostname: idm.rnelson-demo.com
 idm_domain: rnelson-demo.com
 idm_realm: RNELSON-DEMO.COM
