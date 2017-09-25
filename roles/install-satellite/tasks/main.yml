@@ -72,12 +72,18 @@
   when: not satellite_is_installed
   tags: satellite
 
-- name: Download foreman.yml from Laptop for Hammer configs
-  get_url:
-    url: http://{{ laptop_ip }}/foreman.yml
-    dest: /etc/hammer/cli.modules.d/
-    mode: 0755
-  when: not satellite_is_installed
+#- name: Download foreman.yml from Laptop for Hammer configs
+#  get_url:
+#    url: http://{{ laptop_ip }}/foreman.yml
+#    dest: /etc/hammer/cli.modules.d/
+#    mode: 0755
+#  when: not satellite_is_installed
+#  tags: satellite
+
+- name: Foreman Template
+  template:
+    src: "../templates/foreman.yml.j2"
+    dest: /etc/hammer/cli.modules.d/foreman.yml
   tags: satellite
 
 - name: Run satellite-installer
@@ -258,7 +264,8 @@
   tags: satellite
 
 - name: Attach subscriptions to Activation Key for Development
-  command: hammer activation-key add-subscription --name ak-Reg_To_Development --subscription-id {{ satellite_subscription_ids }} --organization "{{satellite_organization}}"
+  command: hammer activation-key add-subscription --name ak-Reg_To_Development --subscription-id {{ item }} --organization "{{satellite_organization}}"
+  with_items: "{{ satellite_subscription_ids }}"
   tags: satellite
 
 - name: Enable Sat Tools channel in Activation Key
