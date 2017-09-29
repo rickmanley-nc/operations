@@ -5,4 +5,4 @@
     - deploy-satellite
     - deploy-tower
     - deploy-idm
-#   - deploy-cloudforms
+    - deploy-cloudforms
