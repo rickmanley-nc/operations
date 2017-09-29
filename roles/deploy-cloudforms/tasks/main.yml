@@ -7,11 +7,11 @@
   command: virt-install --name DEMO-CloudForms --ram 4096 --vcpus 2 --network bridge=virbr3 --import --disk path=/home/rnelson/Images/DEMO-CloudForms.qcow2 --disk path=/home/rnelson/Images/DEMO-CloudForms-Database.qcow2,size=25,bus=virtio,format=qcow2 --noautoconsole
   tags: cloudforms
 
-- name: Wait for SSH to come up on CloudForms
-  local_action:
-    module: wait_for
-      host={{ cloudforms_hostname }}
-      port=22
-      delay=1
-      timeout=300
-  tags: cloudforms
+#- name: Wait for SSH to come up on CloudForms
+#  local_action:
+#    module: wait_for
+#      host={{ cloudforms_hostname }}
+#      port=22
+#      delay=1
+#      timeout=300
+#  tags: cloudforms
