@@ -69,6 +69,7 @@
   with_items:
     - satellite
     - ipa-client
+    - puppet-foreman_scap_client
   when: not satellite_is_installed
   tags: satellite
 
@@ -130,6 +131,10 @@
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.4' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
   tags: satellite
 
+- name: Change RHEL 7.4 Kickstart download policy to 'Immediate' (Kickstart must be Immediate, otherwise Provisioning fails)
+  command: hammer repository update --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)' --download-policy immediate
+  tags: satellite
+
 - name: Enable Satellite Tools 6.2 (for RHEL 7 Server)
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Satellite Tools 6.2 (for RHEL 7 Server) (RPMs)'
   tags: satellite
@@ -167,7 +172,7 @@
     - "Extra Packages for Enterprise Linux"
   tags: satellite
 
-- name: Sync Red Hat base repositories (lazy sync not functioning through hammer)
+- name: Sync Red Hat base repositories
   command: hammer repository synchronize --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --name '{{ item }}'
   with_items:
     - "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server"
@@ -177,7 +182,7 @@
 #    - "Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server"
   tags: satellite
 
-- name: Sync EPEL repositories (lazy sync not functioning through hammer)
+- name: Sync EPEL repositories
   command: hammer repository synchronize --organization "{{satellite_organization}}" --product 'Extra Packages for Enterprise Linux' --name 'EPEL 7 - x86_64'
   tags: satellite
 
@@ -308,7 +313,7 @@
   tags: satellite
 
 - name: Create VLAN_126 subnet
-  command: hammer subnet create --name vlan_126 --dhcp-id 1 --tftp-id 1 --organizations "{{satellite_organization}}" --domains "{{satellite_domain}}" --locations "{{satellite_location}}" --network 192.168.126.0 --mask 255.255.255.0 --gateway 192.168.126.1 --from 192.168.126.150 --to 192.168.126.200
+  command: hammer subnet create --name vlan_126 --dhcp-id 1 --dns-id 1 --tftp-id 1 --organizations "{{satellite_organization}}" --domains "{{satellite_domain}}" --locations "{{satellite_location}}" --network 192.168.126.0 --mask 255.255.255.0 --gateway 192.168.126.1 --from 192.168.126.150 --to 192.168.126.200
   tags: satellite
 
 #manually add remote execution capsule. Not listed in hammer, need to find API
@@ -320,3 +325,10 @@
 - name: Set Host Group "RHEL 7 Development Servers" activation keys to "ak-Reg_To_Development-guest"
   command: hammer hostgroup set-parameter --hostgroup "RHEL7_Development_Servers" --name "kt_activation_keys" --value ak-Reg_To_Development-guest
   tags: satellite
+
+- name: Load OpenScap content
+  command: foreman-rake foreman_openscap:bulk_upload:default
+  tags: satellite
+
+#manually add remote execution snippet to kickstart default finish:
+# <%= snippet 'remote_execution_ssh_keys' %>
