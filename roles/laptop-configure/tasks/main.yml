@@ -10,65 +10,32 @@
     immediate: yes
     state: enabled
     zone: FedoraWorkstation
-  with_items:
-    - '80/tcp'   # HTTP
-    - '443/tcp'  # HTTPS
-    - '22/tcp'   # SSH
-    - '22/udp'   # SSH
+  with_items: "{{ laptop_ports }}"
   tags: laptop
 
 - name: Install httpd
   yum:
-    name: httpd
+    name: "{{ item }}"
     state: latest
+  with_items:
+    - httpd
+    - libvirt-client
   tags: laptop
 
-#- name: Copy over files to be hosted on httpd
-# restorecon -v /var/www/html/*
+- name: Update libvirtd.conf (needed for Satellite to use LibVirt as a Compute Resource)
+  template:
+    src: "../templates/libvirtd.conf.j2"
+    dest: /etc/libvirt/libvirtd.conf
+    mode: 0644
+    backup: yes
+  notify: restart libvirtd
+  tags: laptop
 
-#=====#
-#setup and configure libvirt, deploy /etc/libvirt/qemu/networks/sat-isolated.xml or create vars vile to make it pluggable
-
-
-#<network>
-#  <name>sat-isolated</name>
-#  <uuid>97c6ab0c-6f73-4d57-b1e9-435028739651</uuid>
-#  <forward mode='nat'>
-#    <nat>
-#      <port start='1024' end='65535'/>
-#    </nat>
-#  </forward>
-#  <bridge name='virbr3' stp='on' delay='0'/>
-#  <mac address='52:54:00:1e:1b:10'/>
-#  <ip address='192.168.126.1' netmask='255.255.255.0'>
-#  </ip>
-#</network>
-
-#=====#
-#Define it, start it, and autostart it in libvirt
-
-
-#yum install libvirt-client
-#virsh net-define /etc/libvirt/qemu/networks/sat-isolated.xml
-#virsh net-start sat-isolated
-#virsh net-autostart sat-isolated
-#=====#
-#Deploy /etc/libvirt/libvirtd.conf (we need this to setup the libvirt compute resource)
-
-#listen_tls = 0
-#listen_tcp = 1
-#tcp_port = "16509"
-#auth_tcp = "none"
-#=====#
-#At least on recent versions of Fedora , you have to edit /etc/sysconfig/libvirtd and make sure you have this line uncommented:
-
-#LIBVIRTD_ARGS="--listen"
-#=====#
-#Restart libvirtd
-
-#systemctl restart libvirtd  (or service libvirtd restart)
-#=====#
-
-
-#=====#
-#create custom manifest
+- name: Ensure libvirtd daemon is set to listen for connections
+  template:
+    src: "../templates/libvirtd.j2"
+    dest: /etc/sysconfig/libvirtd
+    mode: 0644
+    backup: yes
+  notify: restart libvirtd
+  tags: laptop

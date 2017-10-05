@@ -43,10 +43,6 @@ satellite_ports:
 #configure httpd, remove default welcome, copy over manifest, inventory-tower-initial-setup, inventory-tower, foreman.yml,
 laptop_ip: 192.168.126.1
 
-laptop_ports:
-  - '80/tcp'   # HTTP
-  - '443/tcp'  # HTTPS
-  - '22/tcp'   # SSH
 
 
 #Tower Configure section
@@ -83,3 +79,7 @@ idm_ports:
   - '67/udp'   # DHCP
   - '68/udp'   # DHCP
   - '69/udp'   # TFTP
+
+
+#CloudForms Configuration Section
+cloudforms_hostname: cloudforms.rnelson-demo.com
