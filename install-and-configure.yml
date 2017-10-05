@@ -5,5 +5,3 @@
     - install-satellite
     - install-tower
     - install-idm
-#    - laptop-configure
-# change roles to "install-*" for easier reading
