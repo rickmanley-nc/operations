@@ -41,12 +41,14 @@ satellite_ports:
 
 #Laptop Configure section#
 #configure httpd, remove default welcome, copy over manifest, inventory-tower-initial-setup, inventory-tower, foreman.yml,
+laptop_hostname: laptop.rnelson-demo.com
 laptop_ip: 192.168.126.1
 
 
 
 #Tower Configure section
-
+tower_hostname: tower.rnelson-demo.com
+tower_ip:
 
 
 #IdM Configure Section
