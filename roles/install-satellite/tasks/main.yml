@@ -123,10 +123,6 @@
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server (RPMs)'
   tags: satellite
 
-#- name: Enable RHEL 7 Server Extras
-#  command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Enterprise Linux 7 Server - Extras (RPMs)'
-#  tags: satellite
-
 - name: Enable RHEL 7.4 Kickstart
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7.4' --name 'Red Hat Enterprise Linux 7 Server (Kickstart)'
   tags: satellite
@@ -138,10 +134,6 @@
 - name: Enable Satellite Tools 6.2 (for RHEL 7 Server)
   command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --name 'Red Hat Satellite Tools 6.2 (for RHEL 7 Server) (RPMs)'
   tags: satellite
-
-#- name: Enable RHEL 7 Server Optional
-#  command: hammer repository-set enable --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --basearch='x86_64' --releasever='7Server' --name 'Red Hat Enterprise Linux 7 Server - Optional (RPMs)'
-#  tags: satellite
 
 - name: Download EPEL GPG Key for version 7 from upstream
   get_url:
@@ -176,10 +168,8 @@
   command: hammer repository synchronize --organization "{{satellite_organization}}" --product 'Red Hat Enterprise Linux Server' --name '{{ item }}'
   with_items:
     - "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server"
-#    - "Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64"
     - "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.4"
     - "Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64"
-#    - "Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server"
   tags: satellite
 
 - name: Sync EPEL repositories
@@ -210,10 +200,8 @@
   command: hammer content-view add-repository --organization "{{satellite_organization}}" --name 'RHEL7_Base' --product 'Red Hat Enterprise Linux Server' --repository '{{ item }}'
   with_items:
     - "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server"
-  #  - "Red Hat Enterprise Linux 7 Server - Extras RPMs x86_64"
     - "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.4"
     - "Red Hat Satellite Tools 6.2 for RHEL 7 Server RPMs x86_64"
-  #  - "Red Hat Enterprise Linux 7 Server - Optional RPMs x86_64 7Server"
   tags: satellite
 
 - name: Add EPEL Repository to EPEL Content View

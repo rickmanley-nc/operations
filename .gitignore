@@ -1,4 +1,2 @@
-test
 roles/satellite-install/files/Satellite_61_Latest.zip
-hosts
 ansible.cfg
