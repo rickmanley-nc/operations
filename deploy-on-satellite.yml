@@ -4,4 +4,4 @@
 
   tasks:
     - name: Provision new host through Satellite on LibVirt
-      command: hammer host create --name {{survey_hostname}} --hostgroup RHEL7_Lab_Servers --organization '{{satellite_organization}}' --location '{{satellite_location}}' --compute-resource Libvirt_CR --compute-profile 1-Small --compute-attributes start=1 --root-password '{{survey_rootpassword}}'
+      command: hammer host create --name {{survey_hostname}} --hostgroup {{survey_hostgroup}} --organization '{{satellite_organization}}' --location '{{satellite_location}}' --compute-resource Libvirt_CR --compute-profile 1-Small --compute-attributes start=1 --root-password '{{survey_rootpassword}}'
