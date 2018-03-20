@@ -1,0 +1,24 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Create Snapshot
+      vmware_guest_snapshot:
+         datacenter: Production
+         hostname: vcenter.rnelson-demo.com
+         folder: /PROD
+         username: admin
+         password: xxxxxx
+         name: "{{ ansible_hostname }}"
+         uuid: "{{ ansible_product_uuid | lower }}"
+         state: present
+         snapshot_name: test1
+         description: patch_snapshot
+         validate_certs: false
+       delegate_to: localhost
+    
+    - name: Update all packages
+      yum:
+        name: '*'
+        state: latest
+
